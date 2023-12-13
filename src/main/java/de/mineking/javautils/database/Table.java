@@ -1,43 +1,71 @@
 package de.mineking.javautils.database;
 
 import org.jdbi.v3.core.Jdbi;
+import org.jdbi.v3.core.statement.StatementContext;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.sql.ResultSet;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 public class Table<T> implements InvocationHandler, ITable<T> {
 	private final String name;
 	private final Class<T> type;
+	private final Supplier<T> instance;
 	private final Jdbi db;
 
-	Table(Jdbi db, Class<T> type, String name) {
+	Table(Jdbi db, Class<T> type, Supplier<T> instance, String name) {
 		this.db = db;
 		this.type = type;
+		this.instance = instance;
 		this.name = name;
 	}
 
 	@Override
 	public void createTable() {
-		db.withHandle(handle -> handle.createUpdate("").execute()); //TODO
+		db.useHandle(handle -> handle.createUpdate("create table <name>(<columns>)")
+				.define("name", name)
+				.define("columns", null) //TODO
+				.execute()
+		);
 	}
 
 	@NotNull
 	@Override
 	public Optional<T> selectOne(@NotNull Where where) {
-		return Optional.empty(); //TODO
+		return db.withHandle(handle -> handle.createQuery("select * from <name><where>")
+				.define("name", name)
+				.define("where", where.format())
+				.map(this::createObject)
+				.findFirst()
+		);
 	}
 
 	@NotNull
 	@Override
-	public List<T> selectMany(@NotNull Where where) {
-		return null; //TODO
+	public List<T> selectMany(@NotNull Where where, @NotNull Order order) {
+		return db.withHandle(handle -> handle.createQuery("select * from <name> <where> <order>")
+				.define("name", name)
+				.define("where", where.format())
+				.define("order", order.format())
+				.map(this::createObject)
+				.list()
+		);
+	}
+
+	private T createObject(ResultSet set, StatementContext context) {
+		var instance = this.instance.get();
+
+		//TODO
+
+		return instance;
 	}
 
 	@Override

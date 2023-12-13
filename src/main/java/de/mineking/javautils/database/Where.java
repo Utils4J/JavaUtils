@@ -80,6 +80,6 @@ public interface Where {
 
 	@NotNull
 	default String format() {
-		return " where " + get();
+		return "where " + get();
 	}
 }

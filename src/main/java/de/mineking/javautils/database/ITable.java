@@ -13,11 +13,20 @@ public interface ITable<T> {
 	Optional<T> selectOne(@NotNull Where where);
 
 	@NotNull
-	List<T> selectMany(@NotNull Where where);
+	List<T> selectMany(@NotNull Where where, @NotNull Order oder);
+
+	default List<T> selectMany(@NotNull Where where) {
+		return selectMany(where, Order.empty());
+	}
+
+	@NotNull
+	default List<T> selectAll(@NotNull Order order) {
+		return selectMany(Where.empty(), order);
+	}
 
 	@NotNull
 	default List<T> selectAll() {
-		return selectMany(Where.empty());
+		return selectAll(Order.empty());
 	}
 
 	@NotNull
