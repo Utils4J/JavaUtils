@@ -3,7 +3,7 @@
 
 # Installation
 
-JavaUtils is hosted on a custom repository at [https://maven.mineking.dev](https://maven.mineking.dev/releases/de/mineking/JavaUtils). Replace VERSION with the lastest version (without the `v` prefix).
+JavaUtils is hosted on a custom repository at [https://maven.mineking.dev](https://maven.mineking.dev/#/releases/de/mineking/JavaUtils). Replace VERSION with the lastest version (without the `v` prefix).
 Alternatively, you can download the artifacts from jitpack (not recommended).
 
 ### Gradle
