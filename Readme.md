@@ -1,4 +1,4 @@
-![[Java CI]](https://github.com/MineKing9534/JavaUtils/actions/workflows/check.yml/badge.svg)
+![[Java CI]](https://github.com/Utils4J/JavaUtils/actions/workflows/check.yml/badge.svg)
 ![[Latest Version]](https://maven.mineking.dev/api/badge/latest/releases/de/mineking/JavaUtils?prefix=v&name=Latest%20Version)
 
 # Installation
