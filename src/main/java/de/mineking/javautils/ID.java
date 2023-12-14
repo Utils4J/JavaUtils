@@ -1,4 +1,4 @@
-package de.mineking.javautils.id;
+package de.mineking.javautils;
 
 import io.seruco.encoding.base62.Base62;
 import org.jetbrains.annotations.NotNull;
