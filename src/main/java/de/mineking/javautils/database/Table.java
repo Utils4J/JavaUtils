@@ -16,6 +16,7 @@ public class Table<T> implements InvocationHandler, ITable<T> {
 	private final DatabaseManager manager;
 
 	private final Map<String, Field> columns = new HashMap<>();
+	private final Map<String, Field> keys = new HashMap<>();
 
 	Table(DatabaseManager manager, Class<T> type, Supplier<T> instance, String name) {
 		this.manager = manager;
@@ -24,7 +25,9 @@ public class Table<T> implements InvocationHandler, ITable<T> {
 
 		for(var f : type.getDeclaredFields()) {
 			if(!f.isAnnotationPresent(Column.class)) continue;
+
 			columns.put(getColumnName(f), f);
+			if(f.getAnnotation(Column.class).key()) keys.put(getColumnName(f), f);
 		}
 	}
 
@@ -34,12 +37,9 @@ public class Table<T> implements InvocationHandler, ITable<T> {
 				.map(e -> "'" + e.getKey() + "' " + manager.getType(e.getValue().getType(), e.getValue()))
 				.collect(Collectors.joining(", "));
 
-		var keys = this.columns.entrySet().stream()
-				.filter(e -> e.getValue().getAnnotation(Column.class).key())
-				.map(e -> "'" + e.getKey() + "'")
-				.collect(Collectors.joining(", "));
-
-		if(!keys.isEmpty()) columns += ", primary key(" + keys + ")";
+		if(!this.keys.isEmpty()) columns += ", primary key(" +
+				this.keys.keySet().stream().map(field -> "'" + field + "'").collect(Collectors.joining(", ")) +
+				")";
 
 		final var fColumns = columns; //Because java
 
@@ -106,8 +106,15 @@ public class Table<T> implements InvocationHandler, ITable<T> {
 	public T insert(@NotNull T object) {
 		var keys = manager.db.withHandle(handle -> handle.createUpdate("insert into <name>(<columns>) values(<values>)")
 				.define("name", name)
-				.define("columns", null)
-				.define("values", null) //TODO
+				.define("columns", columns.keySet().stream().map(k -> "'" + k + "'").collect(Collectors.joining(", ")))
+				.define("values", columns.keySet().stream().map(k -> ":" + k).collect(Collectors.joining(", ")))
+				.bindMap(columns.entrySet().stream().collect(HashMap::new, (m, v) -> {
+					try {
+						m.put(v.getKey(), v.getValue().get(object));
+					} catch(IllegalAccessException e) {
+						throw new RuntimeException(e);
+					}
+				}, HashMap::putAll))
 				.executeAndReturnGeneratedKeys()
 				.mapToMap().one()
 		);
