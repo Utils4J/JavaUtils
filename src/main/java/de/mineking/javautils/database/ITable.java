@@ -33,9 +33,19 @@ public interface ITable<T> {
 	T insert(@NotNull T object);
 
 	@NotNull
-	<C extends Collection<T>> C insertMany(@NotNull C objects);
+	default List<T> insertMany(@NotNull Collection<T> objects) {
+		return objects.stream()
+				.map(this::insert)
+				.toList();
+	}
 
 	void delete(@NotNull Where where);
 
-	void delete(@NotNull T object);
+	default void delete(@NotNull T object) {
+		delete(Where.of(object));
+	}
+
+	default void deleteAll() {
+		delete(Where.empty());
+	}
 }

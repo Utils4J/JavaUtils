@@ -4,6 +4,11 @@ import org.jetbrains.annotations.NotNull;
 
 public interface Where {
 	@NotNull
+	static Where of(@NotNull Object object) {
+		return null;
+	}
+
+	@NotNull
 	static Where empty() {
 		return new Where() {
 			@NotNull
