@@ -11,11 +11,15 @@ import java.lang.reflect.Proxy;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 public class DatabaseManager {
 	public final static Logger logger = LoggerFactory.getLogger(DatabaseManager.class);
+
+	private final Map<String, Object> data = new HashMap<>();
 
 	final List<TypeMapper<?, ?>> mappers = new ArrayList<>();
 	final Jdbi db;
@@ -107,5 +111,17 @@ public class DatabaseManager {
 	@NotNull
 	public <O> Table<O> getTable(@NotNull Class<O> type, @NotNull Supplier<O> instance) {
 		return getTable(type, instance, type.getSimpleName().toLowerCase());
+	}
+
+	@NotNull
+	public DatabaseManager putData(@NotNull String name, @NotNull Object value) {
+		data.put(name, value);
+		return this;
+	}
+
+	@SuppressWarnings("unchecked")
+	@NotNull
+	public <T> T getData(@NotNull String name) {
+		return (T) data.get(name);
 	}
 }
