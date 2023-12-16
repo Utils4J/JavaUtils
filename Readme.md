@@ -30,11 +30,11 @@ dependencies {
 </repositories>
 
 <dependencies>
-<dependency>
-    <groupId>de.mineking</groupId>
-    <artifactId>JavaUtils</artifactId>
-    <version>VERSION</version>
-</dependency>
+    <dependency>
+        <groupId>de.mineking</groupId>
+        <artifactId>JavaUtils</artifactId>
+        <version>VERSION</version>
+    </dependency>
 </dependencies>
 ```
 
