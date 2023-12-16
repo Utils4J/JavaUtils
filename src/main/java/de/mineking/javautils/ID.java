@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 
 public class ID {
 	private final static Base62 base62 = Base62.createInstance();
@@ -40,36 +41,51 @@ public class ID {
 
 		lastTime = time;
 
-		return new ID(toString(buffer.array()));
+		return new ID(buffer.array());
 	}
 
 	@NotNull
 	public static ID decode(@NotNull String id) {
-		return new ID(id);
+		return new ID(fromString(id));
 	}
 
-	private final String string;
+	@NotNull
+	public static ID decode(@NotNull BigInteger id) {
+		return new ID(id.toByteArray());
+	}
 
-	ID(String string) {
-		this.string = string;
+	@NotNull
+	public static ID decode(@NotNull byte[] data) {
+		return new ID(data);
+	}
+
+	private final byte[] data;
+
+	ID(byte[] data) {
+		this.data = data;
 	}
 
 	@NotNull
 	public String asString() {
-		return string;
+		return toString(data);
 	}
 
 	@NotNull
 	public BigInteger asNumber() {
-		return new BigInteger(bytes().array());
+		return new BigInteger(data);
 	}
 
 	@NotNull
 	public ByteBuffer bytes() {
-		return ByteBuffer.wrap(fromString(string));
+		return ByteBuffer.wrap(data);
 	}
 
-	public long getTimeCreated() {
-		return bytes().getLong();
+	public Instant getTimeCreated() {
+		return Instant.ofEpochMilli(bytes().getLong());
+	}
+
+	@Override
+	public String toString() {
+		return asString();
 	}
 }

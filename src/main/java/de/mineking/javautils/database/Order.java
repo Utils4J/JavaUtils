@@ -10,12 +10,12 @@ public interface Order {
 
 	@NotNull
 	static Order ascendingBy(@NotNull String column) {
-		return () -> "order by '" + column + "' asc";
+		return () -> "order by \"" + column + "\" asc";
 	}
 
 	@NotNull
 	static Order descendingBy(@NotNull String column) {
-		return () -> "order by '" + column + "' desc";
+		return () -> "order by \"" + column + "\" desc";
 	}
 
 	@NotNull

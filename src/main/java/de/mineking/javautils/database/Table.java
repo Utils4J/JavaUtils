@@ -1,143 +1,65 @@
 package de.mineking.javautils.database;
 
-import org.jdbi.v3.core.statement.StatementContext;
 import org.jetbrains.annotations.NotNull;
 
-import java.lang.reflect.*;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
+import java.lang.reflect.Field;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
-public class Table<T> implements InvocationHandler, ITable<T> {
-	private final String name;
-	private final Supplier<T> instance;
-	private final DatabaseManager manager;
+public interface Table<T> {
+	@NotNull
+	DatabaseManager getManager();
 
-	private final Map<String, Field> columns = new HashMap<>();
-	private final Map<String, Field> keys = new HashMap<>();
 
-	Table(DatabaseManager manager, Class<T> type, Supplier<T> instance, String name) {
-		this.manager = manager;
-		this.instance = instance;
-		this.name = name;
+	@NotNull
+	Table<T> createTable();
 
-		for(var f : type.getDeclaredFields()) {
-			if(!f.isAnnotationPresent(Column.class)) continue;
+	@NotNull
+	Map<String, Field> getColumns();
 
-			columns.put(getColumnName(f), f);
-			if(f.getAnnotation(Column.class).key()) keys.put(getColumnName(f), f);
-		}
-	}
+	@NotNull
+	Map<String, Field> getKeys();
 
-	@Override
-	public void createTable() {
-		var columns = this.columns.entrySet().stream()
-				.map(e -> "'" + e.getKey() + "' " + manager.getType(e.getValue().getType(), e.getValue()))
-				.collect(Collectors.joining(", "));
 
-		if(!this.keys.isEmpty()) columns += ", primary key(" +
-				this.keys.keySet().stream().map(field -> "'" + field + "'").collect(Collectors.joining(", ")) +
-				")";
+	@NotNull
+	Optional<T> selectOne(@NotNull Where where);
 
-		final var fColumns = columns; //Because java
+	@NotNull
+	List<T> selectMany(@NotNull Where where, @NotNull Order oder);
 
-		manager.db.useHandle(handle -> handle.createUpdate("create table <name>(<columns>)")
-				.define("name", name)
-				.define("columns", fColumns)
-				.execute()
-		);
+	default List<T> selectMany(@NotNull Where where) {
+		return selectMany(where, Order.empty());
 	}
 
 	@NotNull
-	@Override
-	public Optional<T> selectOne(@NotNull Where where) {
-		return manager.db.withHandle(handle -> handle.createQuery("select * from <name><where>")
-				.define("name", name)
-				.define("where", where.format())
-				.map(this::createObject)
-				.findFirst()
-		);
+	default List<T> selectAll(@NotNull Order order) {
+		return selectMany(Where.empty(), order);
 	}
 
 	@NotNull
-	@Override
-	public List<T> selectMany(@NotNull Where where, @NotNull Order order) {
-		return manager.db.withHandle(handle -> handle.createQuery("select * from <name> <where> <order>")
-				.define("name", name)
-				.define("where", where.format())
-				.define("order", order.format())
-				.map(this::createObject)
-				.list()
-		);
-	}
-
-	private T createObject(ResultSet set, StatementContext context) {
-		var instance = this.instance.get();
-
-		columns.forEach((name, field) -> {
-			try {
-				field.set(instance, manager.parse(field.getType(), field, name, set, context));
-			} catch(IllegalAccessException | SQLException e) {
-				throw new RuntimeException(e);
-			}
-		});
-
-		return instance;
-	}
-
-	private String getColumnName(Field field) {
-		var column = field.getAnnotation(Column.class);
-		return column == null ? field.getName() : column.name();
-	}
-
-	@Override
-	public void delete(@NotNull Where where) {
-		manager.db.useHandle(handle -> handle.createUpdate("delete from <name> <where>")
-				.define("name", name)
-				.define("where", where.format())
-				.execute()
-		);
+	default List<T> selectAll() {
+		return selectAll(Order.empty());
 	}
 
 	@NotNull
-	@Override
-	public T insert(@NotNull T object) {
-		var keys = manager.db.withHandle(handle -> handle.createUpdate("insert into <name>(<columns>) values(<values>)")
-				.define("name", name)
-				.define("columns", columns.keySet().stream().map(k -> "'" + k + "'").collect(Collectors.joining(", ")))
-				.define("values", columns.keySet().stream().map(k -> ":" + k).collect(Collectors.joining(", ")))
-				.bindMap(columns.entrySet().stream().collect(HashMap::new, (m, v) -> {
-					try {
-						m.put(v.getKey(), v.getValue().get(object));
-					} catch(IllegalAccessException e) {
-						throw new RuntimeException(e);
-					}
-				}, HashMap::putAll))
-				.executeAndReturnGeneratedKeys()
-				.mapToMap().one()
-		);
+	T insert(@NotNull T object);
 
-		keys.forEach((name, value) -> {
-			try {
-				columns.get(name).set(object, value);
-			} catch(IllegalAccessException e) {
-				throw new RuntimeException(e);
-			}
-		});
-
-		return object;
+	@NotNull
+	default List<T> insertMany(@NotNull Collection<T> objects) {
+		return objects.stream()
+				.map(this::insert)
+				.toList();
 	}
 
-	@Override
-	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-		try {
-			return getClass().getMethod(method.getName(), Arrays.stream(method.getParameters()).map(Parameter::getType).toArray(Class[]::new)).invoke(proxy, args);
-		} catch(IllegalAccessException | InvocationTargetException e) {
-			throw new RuntimeException(e);
-		} catch(NoSuchMethodException e) {
-			return method.invoke(proxy, args);
-		}
+	void delete(@NotNull Where where);
+
+	default void delete(@NotNull T object) {
+		delete(Where.of(this, object));
+	}
+
+	default void deleteAll() {
+		delete(Where.empty());
 	}
 }
