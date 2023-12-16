@@ -140,11 +140,13 @@ public interface Where {
 
 	@NotNull
 	default Where and(@NotNull Where other) {
+		if(other.get().isEmpty()) return this;
 		return () -> "(" + get() + ") and (" + other.get() + ")";
 	}
 
 	@NotNull
 	default Where or(@NotNull Where other) {
+		if(other.get().isEmpty()) return this;
 		return () -> "(" + get() + ") or (" + other.get() + ")";
 	}
 
