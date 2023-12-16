@@ -1,50 +1,21 @@
-import de.mineking.javautils.ID;
+import data.TE;
+import data.TestClass;
 import de.mineking.javautils.database.*;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
 import java.util.EnumSet;
 
 public class DatabaseTest {
-	private final DatabaseManager manager;
-	private final Table<TestClass> table;
-
-	public enum TE {
-		A, B, C
-	}
-
-	public class TestClass implements DataClass<TestClass> {
-		@NotNull
-		@Override
-		public Table<TestClass> getTable() {
-			return table;
-		}
-
-		@Column(key = true)
-		public ID id;
-
-		@Column
-		public TE enumTest;
-
-		@Column
-		public EnumSet<TE> enums;
-
-		private TestClass() {}
-
-		public TestClass(TE e, EnumSet<TE> enums) {
-			this.enumTest = e;
-			this.enums = enums;
-		}
-
-		@Override
-		public String toString() {
-			return id.asString() + ": " + enumTest + ", " + enums + " (" + (id.getTimeCreated().toEpochMilli() - System.currentTimeMillis()) + ")";
-		}
-	}
+	public final DatabaseManager manager;
+	public final Table<TestClass> table;
 
 	public DatabaseTest() {
 		manager = new DatabaseManager("jdbc:postgresql://localhost:5433/test", "postgres", "test123");
-		table = manager.getTable(TestClass.class, TestClass::new, "test").createTable();
+		table = manager.getTable(TestClass.class, this::createInstance, "test").createTable();
+	}
+
+	private TestClass createInstance() {
+		return new TestClass(table);
 	}
 
 	@Test
@@ -52,12 +23,12 @@ public class DatabaseTest {
 
 	@Test
 	public void insert() {
-		System.out.println(new TestClass(TE.B, EnumSet.allOf(TE.class)).update());
+		System.out.println(new TestClass(table, TE.B, EnumSet.allOf(TE.class)).update());
 	}
 
 	@Test
 	public void delete() {
-		new TestClass(TE.A, EnumSet.noneOf(TE.class)).update().delete();
+		new TestClass(table, TE.A, EnumSet.noneOf(TE.class)).update().delete();
 	}
 
 	@Test

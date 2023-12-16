@@ -11,6 +11,8 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class TableImpl<T> implements InvocationHandler, Table<T> {
+	private final Supplier<Table<T>> table;
+
 	private final String name;
 	private final Supplier<T> instance;
 	private final DatabaseManager manager;
@@ -18,8 +20,9 @@ public class TableImpl<T> implements InvocationHandler, Table<T> {
 	private final Map<String, Field> columns = new HashMap<>();
 	private final Map<String, Field> keys = new HashMap<>();
 
-	TableImpl(DatabaseManager manager, Class<T> type, Supplier<T> instance, String name) {
+	TableImpl(DatabaseManager manager, Supplier<Table<T>> table, Class<T> type, Supplier<T> instance, String name) {
 		this.manager = manager;
+		this.table = table;
 		this.instance = instance;
 		this.name = name;
 
@@ -39,7 +42,13 @@ public class TableImpl<T> implements InvocationHandler, Table<T> {
 
 	@NotNull
 	@Override
-	public TableImpl<T> createTable() {
+	public String getName() {
+		return name;
+	}
+
+	@NotNull
+	@Override
+	public Table<T> createTable() {
 		var columns = this.columns.entrySet().stream()
 				.map(e -> '"' + e.getKey() + "\" " + manager.getType(e.getValue().getType(), e.getValue()))
 				.collect(Collectors.joining(", "));
@@ -56,7 +65,7 @@ public class TableImpl<T> implements InvocationHandler, Table<T> {
 				.execute()
 		);
 
-		return this;
+		return table.get();
 	}
 
 	@NotNull
@@ -177,13 +186,20 @@ public class TableImpl<T> implements InvocationHandler, Table<T> {
 	}
 
 	@Override
+	public boolean equals(Object obj) {
+		return obj instanceof Table<?> t && t.getName().equals(name);
+	}
+
+	@Override
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 		try {
 			return getClass().getMethod(method.getName(), Arrays.stream(method.getParameters()).map(Parameter::getType).toArray(Class[]::new)).invoke(this, args);
-		} catch(IllegalAccessException | InvocationTargetException e) {
+		} catch(IllegalAccessException e) {
 			throw new RuntimeException(e);
+		} catch(InvocationTargetException e) {
+			throw e.getCause();
 		} catch(NoSuchMethodException e) {
-			return method.invoke(proxy, args);
+			return InvocationHandler.invokeDefault(proxy, method, args);
 		}
 	}
 }

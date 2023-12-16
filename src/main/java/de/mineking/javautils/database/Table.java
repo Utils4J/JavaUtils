@@ -12,6 +12,9 @@ public interface Table<T> {
 	@NotNull
 	DatabaseManager getManager();
 
+	@NotNull
+	String getName();
+
 
 	@NotNull
 	Table<T> createTable();

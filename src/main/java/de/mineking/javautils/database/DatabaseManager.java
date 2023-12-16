@@ -3,6 +3,8 @@ package de.mineking.javautils.database;
 import org.jdbi.v3.core.Jdbi;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Proxy;
@@ -13,6 +15,8 @@ import java.util.List;
 import java.util.function.Supplier;
 
 public class DatabaseManager {
+	public final static Logger logger = LoggerFactory.getLogger(DatabaseManager.class);
+
 	final List<TypeMapper<?, ?>> mappers = new ArrayList<>();
 	final Jdbi db;
 
@@ -67,14 +71,26 @@ public class DatabaseManager {
 		return getMapper(type, field).value(this, type, field, value);
 	}
 
+	private class TableBuilder<O, T extends Table<O>> {
+		private final T table;
+
+		@SuppressWarnings("unchecked")
+		public TableBuilder(Class<T> table, Class<O> type, Supplier<O> instance, String name) {
+			this.table = (T) Proxy.newProxyInstance(
+					getClass().getClassLoader(),
+					new Class<?>[]{table},
+					new TableImpl<>(DatabaseManager.this,  this::getTable, type, instance, name)
+			);
+		}
+
+		private T getTable() {
+			return table;
+		}
+	}
+
 	@NotNull
-	@SuppressWarnings("unchecked")
 	public <O, T extends Table<O>> T getTable(@NotNull Class<T> table, @NotNull Class<O> type, @NotNull Supplier<O> instance, @NotNull String name) {
-		return (T) Proxy.newProxyInstance(
-				getClass().getClassLoader(),
-				new Class<?>[]{table},
-				new TableImpl<>(this, type, instance, name)
-		);
+		return new TableBuilder<>(table, type, instance, name).getTable();
 	}
 
 	@NotNull
