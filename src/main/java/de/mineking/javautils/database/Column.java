@@ -9,6 +9,8 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface Column {
 	String name() default "";
+
 	boolean key() default false;
+
 	boolean autoincrement() default false;
 }

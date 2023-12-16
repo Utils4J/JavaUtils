@@ -72,7 +72,7 @@ public class DatabaseManager {
 	public <O, T extends Table<O>> T getTable(@NotNull Class<T> table, @NotNull Class<O> type, @NotNull Supplier<O> instance, @NotNull String name) {
 		return (T) Proxy.newProxyInstance(
 				getClass().getClassLoader(),
-				new Class<?>[] { table },
+				new Class<?>[]{table},
 				new TableImpl<>(this, type, instance, name)
 		);
 	}
