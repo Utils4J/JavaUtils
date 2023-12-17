@@ -41,6 +41,11 @@ public class DatabaseManager {
 	}
 
 	@NotNull
+	public Jdbi getDriver() {
+		return db;
+	}
+
+	@NotNull
 	public DatabaseManager addMapper(@NotNull TypeMapper<?, ?> mapper) {
 		mappers.add(0, mapper);
 		return this;
