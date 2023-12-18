@@ -88,7 +88,7 @@ public class DatabaseManager {
 			this.table = (T) Proxy.newProxyInstance(
 					getClass().getClassLoader(),
 					new Class<?>[]{table},
-					new TableImpl<>(DatabaseManager.this,  this::getTable, type, instance, name)
+					new TableImpl<>(DatabaseManager.this, this::getTable, type, instance, name)
 			);
 		}
 
