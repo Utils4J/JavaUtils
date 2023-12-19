@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.sql.Array;
@@ -322,10 +323,9 @@ public interface TypeMapper<T, R> {
 
 		private Class<?> getComponentType(Class<?> type, Type generic) {
 			if(type.isArray()) return type.getComponentType();
-			else {
-				var p = ((ParameterizedType) generic).getActualTypeArguments()[0];
-				return (Class<?>) p;
-			}
+			else if(generic instanceof GenericArrayType ga) return (Class<?>) ga.getGenericComponentType();
+			else if(generic instanceof ParameterizedType p) return (Class<?>) p.getActualTypeArguments()[0];
+			else throw new IllegalArgumentException();
 		}
 
 		@SuppressWarnings("unchecked")
