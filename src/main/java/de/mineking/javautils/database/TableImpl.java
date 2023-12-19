@@ -29,6 +29,8 @@ public class TableImpl<T> implements InvocationHandler, Table<T> {
 		for(var f : type.getDeclaredFields()) {
 			if(!f.isAnnotationPresent(Column.class)) continue;
 
+			f.setAccessible(true);
+
 			columns.put(getColumnName(f), f);
 			if(f.getAnnotation(Column.class).key()) keys.put(getColumnName(f), f);
 		}
