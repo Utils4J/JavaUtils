@@ -390,7 +390,7 @@ public interface TypeMapper<T, R> {
 			else if(type.isAssignableFrom(Set.class)) return new HashSet<>(array);
 			else if(type.isAssignableFrom(EnumSet.class)) return (Collection<C>) createEnumSet(array, component);
 
-			throw new IllegalStateException();
+			throw new IllegalStateException("Cannot create collection for" + type.getTypeName() + " with component " + component.getTypeName());
 		}
 
 		@SuppressWarnings("unchecked")

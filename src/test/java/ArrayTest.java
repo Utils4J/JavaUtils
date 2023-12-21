@@ -13,9 +13,9 @@ public class ArrayTest {
 
 	public class ATest {
 		@Column
-		private final Integer[][] array;
+		private final Set<String>[] array;
 
-		public ATest(Integer[][] array) {
+		public ATest(Set<String>[] array) {
 			this.array = array;
 		}
 
@@ -39,8 +39,8 @@ public class ArrayTest {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void insert() {
-		//table.insert(new ATest(new Set[] {Set.of(1, 2, 3), Set.of(4, 5, 6)}));
-		table.insert(new ATest(new Integer[][] {{1, 2, 3}, {4, 5, 6}}));
+		table.insert(new ATest(new Set[] {Set.of("a", "b", "c"), Set.of("d", "e"), Set.of()}));
+		//table.insert(new ATest(new Integer[][] {{1, 2, 3}, {4, 5, 6}}));
 	}
 
 	@Test
