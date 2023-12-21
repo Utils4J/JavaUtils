@@ -9,6 +9,7 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.reflect.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Stream;
@@ -156,6 +157,12 @@ public interface TypeMapper<T, R> {
 		@Override
 		public boolean accepts(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
 			return Instant.class.isAssignableFrom(type);
+		}
+
+		@NotNull
+		@Override
+		public Argument createArgument(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f, @Nullable Instant value) {
+			return (pos, stmt, ctx) -> stmt.setTimestamp(pos, value == null ? null : Timestamp.from(value));
 		}
 
 		@NotNull
