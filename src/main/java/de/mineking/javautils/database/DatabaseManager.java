@@ -28,6 +28,7 @@ public class DatabaseManager {
 	public DatabaseManager(@NotNull String host, @NotNull String user, @NotNull String password) {
 		db = Jdbi.create(host, user, password);
 
+		mappers.add(TypeMapper.JSON);
 		mappers.add(TypeMapper.SERIAL);
 		mappers.add(TypeMapper.INTEGER);
 		mappers.add(TypeMapper.LONG);

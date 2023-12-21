@@ -1,5 +1,6 @@
 package de.mineking.javautils.database;
 
+import com.google.gson.Gson;
 import de.mineking.javautils.ID;
 import org.jdbi.v3.core.argument.Argument;
 import org.jetbrains.annotations.NotNull;
@@ -396,6 +397,45 @@ public interface TypeMapper<T, R> {
 		@SuppressWarnings("unchecked")
 		private <E extends Enum<E>> EnumSet<E> createEnumSet(Collection<?> collection, Class<?> component) {
 			return collection.isEmpty() ? EnumSet.noneOf((Class<E>) component) : EnumSet.copyOf((Collection<E>) collection);
+		}
+	};
+
+	TypeMapper<String, ?> JSON = new TypeMapper<>() {
+		private final static Gson gson = new Gson();
+
+		@Override
+		public boolean accepts(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
+			return f.isAnnotationPresent(Json.class);
+		}
+
+		@NotNull
+		@Override
+		public Argument createArgument(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f, @Nullable Object value) {
+			return (pos, stmt, ctx) -> stmt.setString(pos, string(manager, type, f, value));
+		}
+
+		@NotNull
+		@Override
+		public String string(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f, @Nullable Object value) {
+			return gson.toJson(value);
+		}
+
+		@NotNull
+		@Override
+		public String getType(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
+			return "json";
+		}
+
+		@Nullable
+		@Override
+		public String extract(@NotNull ResultSet set, @NotNull String name, @NotNull Class<?> target) throws SQLException {
+			return set.getString(name);
+		}
+
+		@Nullable
+		@Override
+		public Object parse(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field field, @Nullable String value) {
+			return value == null ? null : gson.fromJson(value, type);
 		}
 	};
 }
