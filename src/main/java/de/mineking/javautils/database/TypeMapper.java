@@ -322,17 +322,28 @@ public interface TypeMapper<T, R> {
 				while(c.isArray() || Collection.class.isAssignableFrom(c)) c = getComponentType(c, f.getGenericType());
 				t = manager.getType(c, f);
 
-				stmt.setArray(pos, stmt.getConnection().createArrayOf(t, stream(value)
-						.map(a -> {
-							if(a == null) return null;
-							else if(a.getClass().isArray() || a instanceof Collection) return stream(a)
-									.map(v -> manager.getMapper(getComponentType(a.getClass(), f.getGenericType()), f).string(manager, getComponentType(a.getClass(), f.getGenericType()), f, v))
-									.toArray();
-							else return a;
-						})
-						.toArray()
-				));
+				stmt.setArray(pos, stmt.getConnection().createArrayOf(t, toSql(manager, value, f)));
 			};
+		}
+
+		private Object[] toSql(DatabaseManager manager, Object o, Field field) {
+			var component = getComponentType(o.getClass(), field.getGenericType());
+
+			if(component.isArray() || Collection.class.isAssignableFrom(component)) {
+				var maxLength = stream(o).filter(Objects::nonNull).mapToInt(e -> e.getClass().isArray() ? ((Object[]) e).length : ((Collection<?>) e).size()).max().orElse(0);
+				if(maxLength == 0) return null;
+
+				return stream(o)
+						.map(e -> {
+							if(e == null) return new Object[0];
+							return e.getClass().isArray() ? (Object[]) e : ((Collection<?>) e).toArray(i -> (Object[]) Array.newInstance(getComponentType(component, field.getGenericType()), i));
+						})
+						.map(e -> Arrays.copyOf(e, maxLength))
+						.map(e -> toSql(manager, e, field))
+						.toArray();
+			}
+
+			return stream(o).map(e -> manager.getMapper(component, field).string(manager, component, field, e)).toArray();
 		}
 
 		private Stream<?> stream(Object o) {
@@ -350,11 +361,11 @@ public interface TypeMapper<T, R> {
 		@Nullable
 		@Override
 		public Object parse(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field field, @Nullable Object[] value) {
-			if(value == null) return null;
-
 			var component = getComponentType(type, field.getGenericType());
+			if(value == null) return createCollection(type, component, Collections.emptyList());
 
 			var array = Arrays.stream(value)
+					.filter(o -> component.isArray() || Collection.class.isAssignableFrom(component) || o != null)
 					.map(e -> manager.parse(component, field, e))
 					.toList();
 
