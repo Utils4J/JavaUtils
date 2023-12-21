@@ -362,7 +362,7 @@ public interface TypeMapper<T, R> {
 		@Override
 		public Object parse(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field field, @Nullable Object[] value) {
 			var component = getComponentType(type, field.getGenericType());
-			if(value == null) return createCollection(type, component, Collections.emptyList());
+			if(value == null) return type.isArray() ? new Object[0] : createCollection(type, component, Collections.emptyList());
 
 			var array = Arrays.stream(value)
 					.filter(o -> component.isArray() || Collection.class.isAssignableFrom(component) || o != null)
@@ -390,7 +390,7 @@ public interface TypeMapper<T, R> {
 			else if(type.isAssignableFrom(Set.class)) return new HashSet<>(array);
 			else if(type.isAssignableFrom(EnumSet.class)) return (Collection<C>) createEnumSet(array, component);
 
-			throw new IllegalStateException("Cannot create collection for" + type.getTypeName() + " with component " + component.getTypeName());
+			throw new IllegalStateException("Cannot create collection for " + type.getTypeName() + " with component " + component.getTypeName());
 		}
 
 		@SuppressWarnings("unchecked")
