@@ -1,6 +1,7 @@
 package de.mineking.javautils.database;
 
 import org.jdbi.v3.core.Jdbi;
+import org.jdbi.v3.core.argument.Argument;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -34,7 +35,7 @@ public class DatabaseManager {
 		mappers.add(TypeMapper.BOOLEAN);
 		mappers.add(TypeMapper.STRING);
 		mappers.add(TypeMapper.TIMESTAMP);
-		mappers.add(TypeMapper.ID);
+		mappers.add(TypeMapper.MKID);
 		mappers.add(TypeMapper.OPTIONAL);
 		mappers.add(TypeMapper.ENUM);
 		mappers.add(TypeMapper.ARRAY);
@@ -72,12 +73,12 @@ public class DatabaseManager {
 
 	@Nullable
 	public Object extract(@NotNull Class<?> type, @NotNull Field field, @NotNull String name, @NotNull ResultSet set) throws SQLException {
-		return getMapper(type, field).extract(set, name);
+		return getMapper(type, field).extract(set, name, type);
 	}
 
 	@Nullable
-	public <T> Object value(@NotNull Class<?> type, @NotNull Field field, @Nullable T value) {
-		return getMapper(type, field).value(this, type, field, value);
+	public <T> Argument getArgument(@NotNull Class<?> type, @NotNull Field field, @Nullable T value) {
+		return getMapper(type, field).createArgument(this, type, field, value);
 	}
 
 	private class TableBuilder<O, T extends Table<O>> {

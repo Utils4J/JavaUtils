@@ -142,47 +142,50 @@ public class TableImpl<T> implements InvocationHandler, Table<T> {
 
 		var fSql = sql; //Because java
 
-		manager.db.useHandle(handle -> handle.createUpdate(fSql)
-				.define("name", name)
-				.define("columns", columns.entrySet().stream()
-						.filter(e -> !e.getValue().getAnnotation(Column.class).autoincrement())
-						.map(e -> '"' + e.getKey() + '"')
-						.collect(Collectors.joining(", "))
-				)
-				.define("values", columns.entrySet().stream()
-						.filter(e -> !e.getValue().getAnnotation(Column.class).autoincrement())
-						.map(e -> ":" + e.getKey())
-						.collect(Collectors.joining(", "))
-				)
-				.define("keys", this.keys.keySet().stream()
-						.map(k -> '"' + k + '"')
-						.collect(Collectors.joining(", "))
-				)
-				.define("update", columns.keySet().stream()
-						.filter(k -> !this.keys.containsKey(k))
-						.map(k -> '"' + k + "\" = :" + k)
-						.collect(Collectors.joining(", "))
-				)
-				.bindMap(columns.entrySet().stream().collect(HashMap::new, (m, v) -> {
-					try {
-						m.put(v.getKey(), manager.value(v.getValue().getType(), v.getValue(), v.getValue().get(object)));
-					} catch(IllegalAccessException e) {
-						throw new RuntimeException(e);
-					}
-				}, HashMap::putAll))
-				.executeAndReturnGeneratedKeys()
-				.map((rs, ctx) -> {
-					columns.forEach((name, field) -> {
-						try {
-							field.set(object, manager.parse(field.getType(), field, manager.extract(field.getType(), field, name, rs)));
-						} catch(IllegalAccessException | SQLException e) {
-							throw new RuntimeException(e);
-						}
-					});
+		manager.db.useHandle(handle -> {
+			var query = handle.createUpdate(fSql)
+					.define("name", name)
+					.define("columns", columns.entrySet().stream()
+							.filter(e -> !e.getValue().getAnnotation(Column.class).autoincrement())
+							.map(e -> '"' + e.getKey() + '"')
+							.collect(Collectors.joining(", "))
+					)
+					.define("values", columns.entrySet().stream()
+							.filter(e -> !e.getValue().getAnnotation(Column.class).autoincrement())
+							.map(e -> ":" + e.getKey())
+							.collect(Collectors.joining(", "))
+					)
+					.define("keys", this.keys.keySet().stream()
+							.map(k -> '"' + k + '"')
+							.collect(Collectors.joining(", "))
+					)
+					.define("update", columns.keySet().stream()
+							.filter(k -> !this.keys.containsKey(k))
+							.map(k -> '"' + k + "\" = :" + k)
+							.collect(Collectors.joining(", "))
+					);
 
-					return null;
-				}).one()
-		);
+			columns.forEach((name, field) -> {
+				try {
+					query.bind(name, manager.getArgument(field.getType(), field, field.get(object)));
+				} catch(IllegalAccessException e) {
+					throw new RuntimeException(e);
+				}
+			});
+
+			query.executeAndReturnGeneratedKeys()
+					.map((rs, ctx) -> {
+						columns.forEach((name, field) -> {
+							try {
+								field.set(object, manager.parse(field.getType(), field, manager.extract(field.getType(), field, name, rs)));
+							} catch(IllegalAccessException | SQLException e) {
+								throw new RuntimeException(e);
+							}
+						});
+
+						return null;
+					}).one();
+		});
 
 		return object;
 	}

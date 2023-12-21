@@ -11,7 +11,7 @@ public interface Where {
 		return allOf(table.getKeys().entrySet().stream()
 				.map(e -> {
 					try {
-						return equals(e.getKey(), table.getManager().value(e.getValue().getType(), e.getValue(), e.getValue().get(object)));
+						return equals(e.getKey(), table.getManager().getMapper(e.getValue().getType(), e.getValue()).string(table.getManager(), e.getValue().getType(), e.getValue(), e.getValue().get(object)));
 					} catch(IllegalAccessException ex) {
 						throw new RuntimeException(ex);
 					}
