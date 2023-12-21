@@ -411,7 +411,7 @@ public interface TypeMapper<T, R> {
 		@NotNull
 		@Override
 		public Argument createArgument(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f, @Nullable Object value) {
-			return (pos, stmt, ctx) -> stmt.setString(pos, string(manager, type, f, value));
+			return (pos, stmt, ctx) -> stmt.setObject(pos, string(manager, type, f, value));
 		}
 
 		@NotNull
