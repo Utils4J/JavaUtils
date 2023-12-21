@@ -9,6 +9,7 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.reflect.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLType;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Stream;
@@ -411,7 +412,22 @@ public interface TypeMapper<T, R> {
 		@NotNull
 		@Override
 		public Argument createArgument(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f, @Nullable Object value) {
-			return (pos, stmt, ctx) -> stmt.setObject(pos, string(manager, type, f, value) + "::json");
+			return (pos, stmt, ctx) -> stmt.setObject(pos, string(manager, type, f, value), new SQLType() {
+				@Override
+				public String getName() {
+					return "json";
+				}
+
+				@Override
+				public String getVendor() {
+					return null;
+				}
+
+				@Override
+				public Integer getVendorTypeNumber() {
+					return null;
+				}
+			});
 		}
 
 		@NotNull
