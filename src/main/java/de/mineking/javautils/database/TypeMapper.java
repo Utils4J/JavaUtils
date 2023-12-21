@@ -411,7 +411,7 @@ public interface TypeMapper<T, R> {
 		@NotNull
 		@Override
 		public Argument createArgument(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f, @Nullable Object value) {
-			return (pos, stmt, ctx) -> stmt.setObject(pos, string(manager, type, f, value), 114);
+			return (pos, stmt, ctx) -> stmt.setString(pos, string(manager, type, f, value));
 		}
 
 		@NotNull
@@ -423,7 +423,7 @@ public interface TypeMapper<T, R> {
 		@NotNull
 		@Override
 		public String getType(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
-			return "json";
+			return "text";
 		}
 
 		@Nullable
