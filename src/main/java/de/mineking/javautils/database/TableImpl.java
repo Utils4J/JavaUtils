@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class TableImpl<T> implements InvocationHandler, Table<T> {
 	private final Supplier<Table<T>> table;
@@ -17,8 +18,8 @@ public class TableImpl<T> implements InvocationHandler, Table<T> {
 	private final Supplier<T> instance;
 	private final DatabaseManager manager;
 
-	private final Map<String, Field> columns = new HashMap<>();
-	private final Map<String, Field> keys = new HashMap<>();
+	private final Map<String, Field> columns = new LinkedHashMap<>();
+	private final Map<String, Field> keys = new LinkedHashMap<>();
 
 	TableImpl(DatabaseManager manager, Supplier<Table<T>> table, Class<T> type, Supplier<T> instance, String name) {
 		this.manager = manager;
@@ -51,8 +52,10 @@ public class TableImpl<T> implements InvocationHandler, Table<T> {
 	@NotNull
 	@Override
 	public Table<T> createTable() {
-		var columns = this.columns.entrySet().stream()
-				.map(e -> '"' + e.getKey() + "\" " + manager.getType(e.getValue().getType(), e.getValue()))
+		var columns = Stream.concat(
+				this.keys.entrySet().stream(),
+				this.columns.entrySet().stream().filter(e -> !keys.containsKey(e.getKey()))
+		).map(e -> '"' + e.getKey() + "\" " + manager.getType(e.getValue().getType(), e.getValue()))
 				.collect(Collectors.joining(", "));
 
 		if(!this.keys.isEmpty()) columns += ", primary key(" +
