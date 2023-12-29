@@ -1,6 +1,8 @@
 package de.mineking.javautils.database;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.ToNumberStrategy;
 import de.mineking.javautils.ID;
 import org.jdbi.v3.core.argument.Argument;
 import org.jetbrains.annotations.NotNull;
@@ -408,7 +410,15 @@ public interface TypeMapper<T, R> {
 	};
 
 	TypeMapper<String, ?> JSON = new TypeMapper<>() {
-		private final static Gson gson = new Gson();
+		public static ToNumberStrategy numberStrategy = in -> {
+			var str = in.nextString();
+			return str.contains(".") ? Double.parseDouble(str) : Integer.parseInt(str);
+		};
+
+		private final static Gson gson = new GsonBuilder()
+				.setNumberToNumberStrategy(numberStrategy)
+				.setObjectToNumberStrategy(numberStrategy)
+				.create();
 
 		@Override
 		public boolean accepts(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
