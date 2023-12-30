@@ -149,12 +149,24 @@ public class TableImpl<T> implements InvocationHandler, Table<T> {
 			var query = handle.createUpdate(fSql)
 					.define("name", name)
 					.define("columns", columns.entrySet().stream()
-							.filter(e -> !e.getValue().getAnnotation(Column.class).autoincrement())
+							.filter(e -> {
+								try {
+									return !(e.getValue().getAnnotation(Column.class).autoincrement() && ((Number) e.getValue().get(object)).longValue() <= 0);
+								} catch(IllegalAccessException ex) {
+									throw new RuntimeException(ex);
+								}
+							})
 							.map(e -> '"' + e.getKey() + '"')
 							.collect(Collectors.joining(", "))
 					)
 					.define("values", columns.entrySet().stream()
-							.filter(e -> !e.getValue().getAnnotation(Column.class).autoincrement())
+							.filter(e -> {
+								try {
+									return !(e.getValue().getAnnotation(Column.class).autoincrement() && ((Number) e.getValue().get(object)).longValue() <= 0);
+								} catch(IllegalAccessException ex) {
+									throw new RuntimeException(ex);
+								}
+							})
 							.map(e -> ":" + e.getKey())
 							.collect(Collectors.joining(", "))
 					)
