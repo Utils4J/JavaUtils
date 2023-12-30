@@ -396,7 +396,7 @@ public interface TypeMapper<T, R> {
 
 		@SuppressWarnings("unchecked")
 		private <C> Collection<C> createCollection(Class<?> type, Class<?> component, List<C> array) {
-			if(type.isAssignableFrom(List.class)) return array;
+			if(type.isAssignableFrom(List.class)) return new ArrayList<>(array);
 			else if(type.isAssignableFrom(Set.class)) return new HashSet<>(array);
 			else if(type.isAssignableFrom(EnumSet.class)) return (Collection<C>) createEnumSet(array, component);
 

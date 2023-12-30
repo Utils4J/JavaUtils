@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'de.mineking'
-version = '1.0.8'
+version = '1.0.9'
 
 var commit = getCommit()
 var release = System.getenv("RELEASE") == "true"
