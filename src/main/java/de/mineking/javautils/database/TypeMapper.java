@@ -5,10 +5,12 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.ToNumberStrategy;
 import de.mineking.javautils.ID;
 import org.jdbi.v3.core.argument.Argument;
+import org.jdbi.v3.core.statement.StatementContext;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.*;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -24,7 +26,17 @@ public interface TypeMapper<T, R> {
 
 	@NotNull
 	default Argument createArgument(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f, @Nullable R value) {
-		return (pos, stmt, ctx) -> stmt.setObject(pos, value);
+		return new Argument() {
+			@Override
+			public void apply(int position, PreparedStatement statement, StatementContext ctx) throws SQLException {
+				statement.setObject(position, value);
+			}
+
+			@Override
+			public String toString() {
+				return Objects.toString(value);
+			}
+		};
 	}
 
 	@NotNull
@@ -164,7 +176,17 @@ public interface TypeMapper<T, R> {
 		@NotNull
 		@Override
 		public Argument createArgument(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f, @Nullable Instant value) {
-			return (pos, stmt, ctx) -> stmt.setTimestamp(pos, value == null ? null : Timestamp.from(value));
+			return new Argument() {
+				@Override
+				public void apply(int position, PreparedStatement statement, StatementContext ctx) throws SQLException {
+					statement.setTimestamp(position, value == null ? null : Timestamp.from(value));
+				}
+
+				@Override
+				public String toString() {
+					return Objects.toString(value);
+				}
+			};
 		}
 
 		@NotNull
@@ -196,7 +218,17 @@ public interface TypeMapper<T, R> {
 		@NotNull
 		@Override
 		public Argument createArgument(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f, @Nullable ID value) {
-			return (pos, stmt, ctx) -> stmt.setString(pos, value == null ? ID.generate().asString() : value.asString());
+			return new Argument() {
+				@Override
+				public void apply(int position, PreparedStatement statement, StatementContext ctx) throws SQLException {
+					statement.setString(position, value == null ? ID.generate().asString() : value.asString());
+				}
+
+				@Override
+				public String toString() {
+					return value == null ? "null" : value.asString();
+				}
+			};
 		}
 
 		@NotNull
@@ -219,7 +251,17 @@ public interface TypeMapper<T, R> {
 	};
 
 	TypeMapper<Object, Optional<?>> OPTIONAL = new TypeMapper<>() {
-		private final Argument empty = (pos, stmt, ctx) -> stmt.setObject(pos, null);
+		private final Argument empty = new Argument() {
+			@Override
+			public void apply(int position, PreparedStatement statement, StatementContext ctx) throws SQLException {
+				statement.setObject(position, null);
+			}
+
+			@Override
+			public String toString() {
+				return "Optional.empty()";
+			}
+		};
 
 		@Override
 		public boolean accepts(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field field) {
@@ -236,7 +278,17 @@ public interface TypeMapper<T, R> {
 		@NotNull
 		@Override
 		public Argument createArgument(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f, @Nullable Optional<?> value) {
-			return Optional.ofNullable(value).flatMap(x -> x).map(x -> (Argument) (position, statement, ctx) -> statement.setObject(position, x)).orElse(empty);
+			return Optional.ofNullable(value).flatMap(x -> x).map(x -> (Argument) new Argument() {
+				@Override
+				public void apply(int position, PreparedStatement statement, StatementContext ctx) throws SQLException {
+					statement.setObject(position, x);
+				}
+
+				@Override
+				public String toString() {
+					return Objects.toString(x);
+				}
+			}).orElse(empty);
 		}
 
 		@NotNull
@@ -275,7 +327,17 @@ public interface TypeMapper<T, R> {
 		@NotNull
 		@Override
 		public Argument createArgument(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f, @Nullable Enum<?> value) {
-			return (pos, stmt, ctx) -> stmt.setObject(pos, value == null ? null : value.name());
+			return new Argument() {
+				@Override
+				public void apply(int position, PreparedStatement statement, StatementContext ctx) throws SQLException {
+					statement.setObject(position, value == null ? null : value.name());
+				}
+
+				@Override
+				public String toString() {
+					return Objects.toString(value);
+				}
+			};
 		}
 
 		@NotNull
@@ -320,19 +382,27 @@ public interface TypeMapper<T, R> {
 		@NotNull
 		@Override
 		public Argument createArgument(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f, @Nullable Object value) {
-			return (pos, stmt, ctx) -> {
-				if(value == null) {
-					stmt.setArray(pos, null);
-					return;
+			return new Argument() {
+				@Override
+				public void apply(int position, PreparedStatement statement, StatementContext ctx) throws SQLException {
+					if(value == null) {
+						statement.setArray(position, null);
+						return;
+					}
+
+					var t = "text";
+
+					var c = getComponentType(type, f.getGenericType());
+					while(c.isArray() || Collection.class.isAssignableFrom(c)) c = getComponentType(c, f.getGenericType());
+					t = manager.getType(c, f);
+
+					statement.setArray(position, statement.getConnection().createArrayOf(t, toSql(manager, value, f)));
 				}
 
-				var t = "text";
-
-				var c = getComponentType(type, f.getGenericType());
-				while(c.isArray() || Collection.class.isAssignableFrom(c)) c = getComponentType(c, f.getGenericType());
-				t = manager.getType(c, f);
-
-				stmt.setArray(pos, stmt.getConnection().createArrayOf(t, toSql(manager, value, f)));
+				@Override
+				public String toString() {
+					return type.isArray() ? Arrays.deepToString((Object[]) value) : Objects.toString(value);
+				}
 			};
 		}
 
@@ -428,7 +498,17 @@ public interface TypeMapper<T, R> {
 		@NotNull
 		@Override
 		public Argument createArgument(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f, @Nullable Object value) {
-			return (pos, stmt, ctx) -> stmt.setString(pos, string(manager, type, f, value));
+			return new Argument() {
+				@Override
+				public void apply(int position, PreparedStatement statement, StatementContext ctx) throws SQLException {
+					statement.setString(position, string(manager, type, f, value));
+				}
+
+				@Override
+				public String toString() {
+					return Objects.toString(value);
+				}
+			};
 		}
 
 		@NotNull
