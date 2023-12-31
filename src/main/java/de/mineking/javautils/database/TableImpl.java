@@ -91,6 +91,7 @@ public class TableImpl<T> implements InvocationHandler, Table<T> {
 		return manager.db.withHandle(handle -> handle.createQuery("select * from <name> <where>")
 				.define("name", name)
 				.define("where", where.format())
+				.bindMap(where.values())
 				.map(this::createObject)
 				.findFirst()
 		);
@@ -102,6 +103,7 @@ public class TableImpl<T> implements InvocationHandler, Table<T> {
 		return manager.db.withHandle(handle -> handle.createQuery("select * from <name> <where> <order>")
 				.define("name", name)
 				.define("where", where.format())
+				.bindMap(where.values())
 				.define("order", order.format())
 				.map(this::createObject)
 				.list()
@@ -132,6 +134,7 @@ public class TableImpl<T> implements InvocationHandler, Table<T> {
 		manager.db.useHandle(handle -> handle.createUpdate("delete from <name> <where>")
 				.define("name", name)
 				.define("where", where.format())
+				.bindMap(where.values())
 				.execute()
 		);
 	}

@@ -1,8 +1,12 @@
 package de.mineking.javautils.database;
 
+import de.mineking.javautils.ID;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 public interface Where {
 	@NotNull
@@ -23,6 +27,12 @@ public interface Where {
 	@NotNull
 	static Where empty() {
 		return new Where() {
+			@NotNull
+			@Override
+			public Map<String, Object> values() {
+				return Collections.emptyMap();
+			}
+
 			@NotNull
 			@Override
 			public String get() {
@@ -53,11 +63,6 @@ public interface Where {
 				return this;
 			}
 		};
-	}
-
-	@NotNull
-	static Where of(@NotNull String condition) {
-		return () -> condition;
 	}
 
 	@NotNull
@@ -95,42 +100,42 @@ public interface Where {
 
 	@NotNull
 	static Where equals(@NotNull String name, @NotNull Object value) {
-		return () -> '"' + name + "\" = '" + value + "'";
+		return WhereImpl.create(name, value, "=");
 	}
 
 	@NotNull
 	static Where notEqual(@NotNull String name, @NotNull Object value) {
-		return () -> '"' + name + "\" != '" + value + "'";
+		return WhereImpl.create(name, value, "!=");
 	}
 
 	@NotNull
 	static Where like(@NotNull String name, @NotNull Object value) {
-		return () -> '"' + name + "\" like '" + value + "'";
+		return WhereImpl.create(name, value, "like");
 	}
 
 	@NotNull
 	static Where likeIgnoreCase(@NotNull String name, @NotNull Object value) {
-		return () -> '"' + name + "\" ilike '" + value + "'";
+		return WhereImpl.create(name, value, "ilike");
 	}
 
 	@NotNull
 	static Where greater(@NotNull String name, @NotNull Object value) {
-		return () -> '"' + name + "\" > '" + value + "'";
+		return WhereImpl.create(name, value, ">");
 	}
 
 	@NotNull
 	static Where lower(@NotNull String name, @NotNull Object value) {
-		return () -> '"' + name + "\" < '" + value + "'";
+		return WhereImpl.create(name, value, "<");
 	}
 
 	@NotNull
 	static Where greaterOrEqual(@NotNull String name, @NotNull Object value) {
-		return () -> '"' + name + "\" >= '" + value + "'";
+		return WhereImpl.create(name, value, ">=");
 	}
 
 	@NotNull
 	static Where lowerOrEqual(@NotNull String name, @NotNull Object value) {
-		return () -> '"' + name + "\" <= '" + value + "'";
+		return WhereImpl.create(name, value, "<=");
 	}
 
 	@NotNull
@@ -140,20 +145,21 @@ public interface Where {
 
 	@NotNull
 	default Where and(@NotNull Where other) {
-		if(other.get().isEmpty()) return this;
-		return () -> "(" + get() + ") and (" + other.get() + ")";
+		return WhereImpl.combined(this, other, "and");
 	}
 
 	@NotNull
 	default Where or(@NotNull Where other) {
-		if(other.get().isEmpty()) return this;
-		return () -> "(" + get() + ") or (" + other.get() + ")";
+		return WhereImpl.combined(this, other, "or");
 	}
 
 	@NotNull
 	default Where not() {
-		return () -> "not " + get();
+		return new WhereImpl("not " + get(), values());
 	}
+
+	@NotNull
+	Map<String, Object> values();
 
 	@NotNull
 	String get();
@@ -161,5 +167,42 @@ public interface Where {
 	@NotNull
 	default String format() {
 		return "where " + get();
+	}
+
+	class WhereImpl implements Where {
+		private final String str;
+		private final Map<String, Object> values;
+
+		public WhereImpl(String str, Map<String, Object> values) {
+			this.str = str;
+			this.values = values;
+		}
+
+		public static Where create(String name, Object value, String operator) {
+			String id = ID.generate().asString();
+			return new WhereImpl("\"" + name + "\" " + operator + " :" + id, Map.of(id, value));
+		}
+
+		public static Where combined(Where a, Where b, String operator) {
+			if(a.get().isEmpty()) return b;
+			if(b.get().isEmpty()) return a;
+
+			var combined = new HashMap<>(a.values());
+			combined.putAll(b.values());
+
+			return new WhereImpl("(" + a.get() + ") " + operator + " (" + b.get() + ")", combined);
+		}
+
+		@NotNull
+		@Override
+		public Map<String, Object> values() {
+			return values;
+		}
+
+		@NotNull
+		@Override
+		public String get() {
+			return str;
+		}
 	}
 }
