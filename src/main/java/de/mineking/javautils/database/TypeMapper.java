@@ -243,10 +243,10 @@ public interface TypeMapper<T, R> {
 			return set.getString(name);
 		}
 
-		@NotNull
+		@Nullable
 		@Override
-		public de.mineking.javautils.ID parse(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field field, @NotNull String value) {
-			return ID.decode(value);
+		public de.mineking.javautils.ID parse(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field field, @Nullable String value) {
+			return value == null ? null : ID.decode(value);
 		}
 	};
 
