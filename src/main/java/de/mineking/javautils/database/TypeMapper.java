@@ -399,7 +399,7 @@ public interface TypeMapper<T, R> {
 		@Override
 		public Object[] string(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f, @Nullable Object value) {
 			if(value == null) return null;
-			return type.isArray() ? (Object[]) value : ((Collection<?>) value).toArray();
+			return type.isArray() ? (Object[]) value : ((Collection<?>) value).toArray(i -> (Object[]) Array.newInstance(getComponentType(type, f.getGenericType()), i));
 		}
 
 		private Class<?> getComponentType(Class<?> type, Type generic) {
