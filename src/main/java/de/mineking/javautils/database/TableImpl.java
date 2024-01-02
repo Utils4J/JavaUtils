@@ -55,7 +55,7 @@ public class TableImpl<T> implements InvocationHandler, Table<T> {
 		var columns = Stream.concat(
 				this.keys.entrySet().stream(),
 				this.columns.entrySet().stream().filter(e -> !keys.containsKey(e.getKey()))
-		).map(e -> '"' + e.getKey() + "\" " + manager.getType(e.getValue().getType(), e.getValue()))
+		).map(e -> '"' + e.getKey() + "\" " + manager.getType(e.getValue().getType(), e.getValue()).getName())
 				.collect(Collectors.joining(", "));
 
 		if(!this.keys.isEmpty()) columns += ", primary key(" +

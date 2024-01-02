@@ -1,5 +1,6 @@
 package de.mineking.javautils.database;
 
+import de.mineking.javautils.database.type.DataType;
 import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.core.argument.Argument;
 import org.jetbrains.annotations.NotNull;
@@ -62,7 +63,7 @@ public class DatabaseManager {
 	}
 
 	@NotNull
-	public String getType(@NotNull Class<?> type, @NotNull Field field) {
+	public DataType getType(@NotNull Class<?> type, @NotNull Field field) {
 		return getMapper(type, field).getType(this, type, field);
 	}
 

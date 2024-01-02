@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.ToNumberStrategy;
 import de.mineking.javautils.ID;
+import de.mineking.javautils.database.type.DataType;
+import de.mineking.javautils.database.type.PostgresType;
 import org.jdbi.v3.core.argument.Argument;
 import org.jdbi.v3.core.statement.StatementContext;
 import org.jetbrains.annotations.NotNull;
@@ -22,7 +24,7 @@ public interface TypeMapper<T, R> {
 	boolean accepts(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f);
 
 	@NotNull
-	String getType(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f);
+	DataType getType(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f);
 
 	@NotNull
 	default Argument createArgument(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f, @Nullable T value) {
@@ -62,8 +64,8 @@ public interface TypeMapper<T, R> {
 
 		@NotNull
 		@Override
-		public String getType(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
-			return int.class.isAssignableFrom(type) ? "serial" : "bigserial";
+		public DataType getType(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
+			return int.class.isAssignableFrom(type) ? PostgresType.SERIAL : PostgresType.BIG_SERIAL;
 		}
 
 		@Nullable
@@ -81,8 +83,8 @@ public interface TypeMapper<T, R> {
 
 		@NotNull
 		@Override
-		public String getType(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
-			return "int";
+		public DataType getType(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
+			return PostgresType.INTEGER;
 		}
 
 		@Nullable
@@ -100,8 +102,8 @@ public interface TypeMapper<T, R> {
 
 		@NotNull
 		@Override
-		public String getType(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
-			return "bigint";
+		public DataType getType(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
+			return PostgresType.BIG_INT;
 		}
 
 		@Nullable
@@ -119,8 +121,8 @@ public interface TypeMapper<T, R> {
 
 		@NotNull
 		@Override
-		public String getType(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
-			return "decimal";
+		public DataType getType(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
+			return PostgresType.NUMERIC;
 		}
 
 		@Nullable
@@ -138,8 +140,8 @@ public interface TypeMapper<T, R> {
 
 		@NotNull
 		@Override
-		public String getType(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
-			return "boolean";
+		public DataType getType(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
+			return PostgresType.BOOLEAN;
 		}
 
 		@Nullable
@@ -157,8 +159,8 @@ public interface TypeMapper<T, R> {
 
 		@NotNull
 		@Override
-		public String getType(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
-			return "text";
+		public DataType getType(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
+			return PostgresType.TEXT;
 		}
 
 		@Nullable
@@ -192,8 +194,8 @@ public interface TypeMapper<T, R> {
 
 		@NotNull
 		@Override
-		public String getType(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
-			return "timestamp";
+		public DataType getType(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
+			return PostgresType.TIMESTAMP;
 		}
 
 		@Nullable
@@ -212,8 +214,8 @@ public interface TypeMapper<T, R> {
 
 		@NotNull
 		@Override
-		public String getType(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
-			return "text";
+		public DataType getType(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
+			return PostgresType.TEXT;
 		}
 
 		@NotNull
@@ -243,7 +245,7 @@ public interface TypeMapper<T, R> {
 
 		@NotNull
 		@Override
-		public String getType(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
+		public DataType getType(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
 			var p = ((ParameterizedType) f.getGenericType()).getActualTypeArguments()[0];
 			return manager.getType((Class<?>) p, f);
 		}
@@ -279,8 +281,8 @@ public interface TypeMapper<T, R> {
 
 		@NotNull
 		@Override
-		public String getType(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
-			return "text";
+		public DataType getType(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
+			return PostgresType.TEXT;
 		}
 
 		@Nullable
@@ -317,9 +319,9 @@ public interface TypeMapper<T, R> {
 
 		@NotNull
 		@Override
-		public String getType(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
+		public DataType getType(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
 			var component = getComponentType(type, f.getGenericType());
-			return manager.getType(component, f) + "[]";
+			return DataType.ofName(manager.getType(component, f).getName() + "[]");
 		}
 
 		@NotNull
@@ -333,13 +335,11 @@ public interface TypeMapper<T, R> {
 						return;
 					}
 
-					var t = "text";
-
 					var c = getComponentType(type, f.getGenericType());
 					while(c.isArray() || Collection.class.isAssignableFrom(c)) c = getComponentType(c, f.getGenericType());
-					t = manager.getType(c, f);
+					DataType t = manager.getType(c, f);
 
-					statement.setArray(position, statement.getConnection().createArrayOf(t, toSql(manager, value, f)));
+					statement.setArray(position, statement.getConnection().createArrayOf(t.getName(), toSql(manager, value, f)));
 				}
 
 				@Override
@@ -469,8 +469,8 @@ public interface TypeMapper<T, R> {
 
 		@NotNull
 		@Override
-		public String getType(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
-			return "text";
+		public DataType getType(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
+			return PostgresType.TEXT;
 		}
 
 		@Nullable
