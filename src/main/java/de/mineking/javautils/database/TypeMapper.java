@@ -39,9 +39,9 @@ public interface TypeMapper<T, R> {
 		};
 	}
 
-	@NotNull
-	default String string(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f, @Nullable R value) {
-		return Objects.toString(value);
+	@Nullable
+	default Object string(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f, @Nullable R value) {
+		return value;
 	}
 
 	@Nullable
@@ -291,9 +291,9 @@ public interface TypeMapper<T, R> {
 			}).orElse(empty);
 		}
 
-		@NotNull
+		@Nullable
 		@Override
-		public String string(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f, @Nullable Optional<?> value) {
+		public Object string(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f, @Nullable Optional<?> value) {
 			var p = ((ParameterizedType) f.getGenericType()).getActualTypeArguments()[0];
 			return manager.getMapper((Class<?>) p, f).string(manager, (Class<?>) p, f, value.orElse(null));
 		}
@@ -340,10 +340,10 @@ public interface TypeMapper<T, R> {
 			};
 		}
 
-		@NotNull
+		@Nullable
 		@Override
 		public String string(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f, @Nullable Enum<?> value) {
-			return value == null ? "null" : value.name();
+			return value == null ? null : value.name();
 		}
 
 		@Nullable
