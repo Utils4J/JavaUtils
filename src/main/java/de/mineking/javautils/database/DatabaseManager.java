@@ -79,7 +79,8 @@ public class DatabaseManager {
 
 	@Nullable
 	public <T> Argument getArgument(@NotNull Class<?> type, @NotNull Field field, @Nullable T value) {
-		return getMapper(type, field).createArgument(this, type, field, value);
+		var mapper = getMapper(type, field);
+		return mapper.createArgument(this, type, field, mapper.string(this, type, field, value));
 	}
 
 	private class TableBuilder<O, T extends Table<O>> {

@@ -25,7 +25,7 @@ public interface TypeMapper<T, R> {
 	String getType(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f);
 
 	@NotNull
-	default Argument createArgument(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f, @Nullable R value) {
+	default Argument createArgument(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f, @Nullable T value) {
 		return new Argument() {
 			@Override
 			public void apply(int position, PreparedStatement statement, StatementContext ctx) throws SQLException {
@@ -40,8 +40,9 @@ public interface TypeMapper<T, R> {
 	}
 
 	@Nullable
-	default Object string(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f, @Nullable R value) {
-		return value;
+	@SuppressWarnings("unchecked")
+	default T string(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f, @Nullable R value) {
+		return (T) value;
 	}
 
 	@Nullable
@@ -217,22 +218,6 @@ public interface TypeMapper<T, R> {
 
 		@NotNull
 		@Override
-		public Argument createArgument(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f, @Nullable ID value) {
-			return new Argument() {
-				@Override
-				public void apply(int position, PreparedStatement statement, StatementContext ctx) throws SQLException {
-					statement.setString(position, value == null ? ID.generate().asString() : value.asString());
-				}
-
-				@Override
-				public String toString() {
-					return value == null ? "null" : value.asString();
-				}
-			};
-		}
-
-		@NotNull
-		@Override
 		public String string(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f, @Nullable ID value) {
 			return value == null ? ID.generate().asString() : value.asString();
 		}
@@ -251,18 +236,6 @@ public interface TypeMapper<T, R> {
 	};
 
 	TypeMapper<Object, Optional<?>> OPTIONAL = new TypeMapper<>() {
-		private final Argument empty = new Argument() {
-			@Override
-			public void apply(int position, PreparedStatement statement, StatementContext ctx) throws SQLException {
-				statement.setObject(position, null);
-			}
-
-			@Override
-			public String toString() {
-				return "Optional.empty()";
-			}
-		};
-
 		@Override
 		public boolean accepts(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field field) {
 			return type.equals(Optional.class);
@@ -275,25 +248,11 @@ public interface TypeMapper<T, R> {
 			return manager.getType((Class<?>) p, f);
 		}
 
-		@NotNull
-		@Override
-		public Argument createArgument(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f, @Nullable Optional<?> value) {
-			return Optional.ofNullable(value).flatMap(x -> x).map(x -> (Argument) new Argument() {
-				@Override
-				public void apply(int position, PreparedStatement statement, StatementContext ctx) throws SQLException {
-					statement.setObject(position, x);
-				}
-
-				@Override
-				public String toString() {
-					return Objects.toString(x);
-				}
-			}).orElse(empty);
-		}
-
 		@Nullable
 		@Override
 		public Object string(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f, @Nullable Optional<?> value) {
+			if(value == null) return null;
+
 			var p = ((ParameterizedType) f.getGenericType()).getActualTypeArguments()[0];
 			return manager.getMapper((Class<?>) p, f).string(manager, (Class<?>) p, f, value.orElse(null));
 		}
@@ -322,22 +281,6 @@ public interface TypeMapper<T, R> {
 		@Override
 		public String getType(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
 			return "text";
-		}
-
-		@NotNull
-		@Override
-		public Argument createArgument(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f, @Nullable Enum<?> value) {
-			return new Argument() {
-				@Override
-				public void apply(int position, PreparedStatement statement, StatementContext ctx) throws SQLException {
-					statement.setObject(position, value == null ? null : value.name());
-				}
-
-				@Override
-				public String toString() {
-					return Objects.toString(value);
-				}
-			};
 		}
 
 		@Nullable
@@ -381,7 +324,7 @@ public interface TypeMapper<T, R> {
 
 		@NotNull
 		@Override
-		public Argument createArgument(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f, @Nullable Object value) {
+		public Argument createArgument(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f, @Nullable Object[] value) {
 			return new Argument() {
 				@Override
 				public void apply(int position, PreparedStatement statement, StatementContext ctx) throws SQLException {
@@ -452,6 +395,13 @@ public interface TypeMapper<T, R> {
 			return type.isArray() ? array.toArray(i -> (Object[]) Array.newInstance(component, i)) : createCollection(type, component, array);
 		}
 
+		@Nullable
+		@Override
+		public Object[] string(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f, @Nullable Object value) {
+			if(value == null) return null;
+			return type.isArray() ? (Object[]) value : ((Collection<?>) value).toArray();
+		}
+
 		private Class<?> getComponentType(Class<?> type, Type generic) {
 			if(type.isArray()) return type.getComponentType();
 			else return getClass(generic);
@@ -480,7 +430,7 @@ public interface TypeMapper<T, R> {
 	};
 
 	TypeMapper<String, ?> JSON = new TypeMapper<>() {
-		public static ToNumberStrategy numberStrategy = in -> {
+		public static final ToNumberStrategy numberStrategy = in -> {
 			var str = in.nextString();
 			return str.contains(".") ? Double.parseDouble(str) : Integer.parseInt(str);
 		};
@@ -497,11 +447,11 @@ public interface TypeMapper<T, R> {
 
 		@NotNull
 		@Override
-		public Argument createArgument(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f, @Nullable Object value) {
+		public Argument createArgument(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f, @Nullable String value) {
 			return new Argument() {
 				@Override
 				public void apply(int position, PreparedStatement statement, StatementContext ctx) throws SQLException {
-					statement.setString(position, string(manager, type, f, value));
+					statement.setString(position, value);
 				}
 
 				@Override

@@ -124,7 +124,7 @@ public class TableImpl<T> implements InvocationHandler, Table<T> {
 		return instance;
 	}
 
-	private String getColumnName(Field field) {
+	static String getColumnName(Field field) {
 		var column = field.getAnnotation(Column.class);
 		return (column == null || column.name().isEmpty() ? field.getName() : column.name()).toLowerCase();
 	}

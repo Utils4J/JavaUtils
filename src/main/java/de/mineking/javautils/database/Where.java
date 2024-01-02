@@ -11,11 +11,16 @@ import java.util.Map;
 public interface Where {
 	@NotNull
 	static <T> Where of(@NotNull Table<T> table, @NotNull T object) {
-		if(table.getKeys().isEmpty()) throw new IllegalArgumentException("Cannot delete element without key");
+		if(table.getKeys().isEmpty()) throw new IllegalArgumentException("Cannot identify object without keys");
 		return allOf(table.getKeys().entrySet().stream()
 				.map(e -> {
 					try {
-						return equals(e.getKey(), table.getManager().getMapper(e.getValue().getType(), e.getValue()).string(table.getManager(), e.getValue().getType(), e.getValue(), e.getValue().get(object)));
+						var field = e.getValue();
+						var value = table.getManager().getMapper(field.getType(), field).string(table.getManager(), field.getType(), field, field.get(object));
+
+						if(value == null) return Where.empty();
+
+						return equals(e.getKey(), value);
 					} catch(IllegalAccessException ex) {
 						throw new RuntimeException(ex);
 					}
