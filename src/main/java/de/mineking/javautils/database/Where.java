@@ -184,8 +184,12 @@ public interface Where {
 		}
 
 		public static Where create(String name, Object value, String operator) {
-			String id = ID.generate().asString();
-			return new WhereImpl("\"" + name + "\" " + operator + " :" + id, Map.of(id, value));
+			var id = ID.generate().asString();
+
+			var data = new HashMap<String, Object>();
+			data.put(id, value);
+
+			return new WhereImpl("\"" + name + "\" " + operator + " :" + id, data);
 		}
 
 		public static Where combined(Where a, Where b, String operator) {
