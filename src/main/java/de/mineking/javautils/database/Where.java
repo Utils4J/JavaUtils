@@ -174,6 +174,28 @@ public interface Where {
 		return "where " + get();
 	}
 
+	@NotNull
+	static Where unsafe(@NotNull String str) {
+		return new Where() {
+			@NotNull
+			@Override
+			public Map<String, Object> values() {
+				return Collections.emptyMap();
+			}
+
+			@NotNull
+			@Override
+			public String get() {
+				return str;
+			}
+
+			@Override
+			public String toString() {
+				return str;
+			}
+		};
+	}
+
 	class WhereImpl implements Where {
 		private final String str;
 		private final Map<String, Object> values;
