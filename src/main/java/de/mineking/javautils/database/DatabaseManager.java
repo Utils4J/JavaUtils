@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Proxy;
+import java.lang.reflect.Type;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -56,32 +57,37 @@ public class DatabaseManager {
 
 	@SuppressWarnings("unchecked")
 	@NotNull
-	public <T, R> TypeMapper<T, R> getMapper(@NotNull Class<?> type, @NotNull Field f) {
+	public <T, R> TypeMapper<T, R> getMapper(@NotNull Type type, @NotNull Field f) {
 		return (TypeMapper<T, R>) mappers.stream()
 				.filter(m -> m.accepts(this, type, f))
 				.findFirst().orElseThrow(() -> new IllegalStateException("No mapper found for " + type));
 	}
 
 	@NotNull
-	public DataType getType(@NotNull Class<?> type, @NotNull Field field) {
+	public DataType getType(@NotNull Type type, @NotNull Field field) {
 		return getMapper(type, field).getType(this, type, field);
+	}
+
+	@Nullable
+	public <T> Argument getArgument(@NotNull Type type, @NotNull Field field, @Nullable T value) {
+		var mapper = getMapper(type, field);
+		return mapper.createArgument(this, type, field, mapper.format(this, type, field, value));
+	}
+
+	@Nullable
+	public Object format(@NotNull Type type, @NotNull Field field, @Nullable Object obj) {
+		return getMapper(type, field).format(this, type, field, obj);
+	}
+
+	@Nullable
+	public Object extract(@NotNull Type type, @NotNull Field field, @NotNull String name, @NotNull ResultSet set) throws SQLException {
+		return getMapper(type, field).extract(set, name, type);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Nullable
-	public <T, R> R parse(@NotNull Class<?> type, @NotNull Field field, T value) {
+	public <T, R> R parse(@NotNull Type type, @NotNull Field field, T value) {
 		return (R) getMapper(type, field).parse(this, type, field, value);
-	}
-
-	@Nullable
-	public Object extract(@NotNull Class<?> type, @NotNull Field field, @NotNull String name, @NotNull ResultSet set) throws SQLException {
-		return getMapper(type, field).extract(set, name, type);
-	}
-
-	@Nullable
-	public <T> Argument getArgument(@NotNull Class<?> type, @NotNull Field field, @Nullable T value) {
-		var mapper = getMapper(type, field);
-		return mapper.createArgument(this, type, field, mapper.string(this, type, field, value));
 	}
 
 	private class TableBuilder<O, T extends Table<O>> {

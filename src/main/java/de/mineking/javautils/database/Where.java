@@ -3,10 +3,12 @@ package de.mineking.javautils.database;
 import de.mineking.javautils.ID;
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public interface Where {
 	@NotNull
@@ -16,7 +18,7 @@ public interface Where {
 				.map(e -> {
 					try {
 						var field = e.getValue();
-						var value = table.getManager().getMapper(field.getType(), field).string(table.getManager(), field.getType(), field, field.get(object));
+						var value = table.getManager().getMapper(field.getType(), field).format(table.getManager(), field.getType(), field, field.get(object));
 
 						if(value == null) return Where.empty();
 
@@ -165,6 +167,28 @@ public interface Where {
 
 	@NotNull
 	Map<String, Object> values();
+
+	@SuppressWarnings({"rawtypes", "unchecked"})
+	default Map<String, Object> formatValues(@NotNull Table<?> table) {
+		return values().entrySet().stream()
+				.map(e -> {
+					Field f = table.getKeys().get(e.getKey());
+					if(f == null) throw new IllegalStateException("Table has no column with name '" + e.getKey() + "'");
+
+					TypeMapper mapper = table.getManager().getMapper(f.getType(), f);
+
+					Object value;
+
+					try {
+						value = mapper.format(table.getManager(), f.getType(), f, e.getValue());
+					} catch(IllegalArgumentException ex) {
+						value = e.getValue();
+					}
+
+					return Map.entry(e.getKey(), mapper.createArgument(table.getManager(), f.getType(), f, value));
+				})
+				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+	}
 
 	@NotNull
 	String get();
