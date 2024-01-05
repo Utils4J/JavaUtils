@@ -47,9 +47,7 @@ public class ReflectionUtils {
 		if(type instanceof Class<?> c) {
 			if(c.isArray()) return c.getComponentType();
 			else return c;
-		}
-
-		else if(type instanceof GenericArrayType at) return getActualArrayComponent(at.getGenericComponentType());
+		} else if(type instanceof GenericArrayType at) return getActualArrayComponent(at.getGenericComponentType());
 		else if(type instanceof ParameterizedType pt && Collection.class.isAssignableFrom(getClass(type))) return getActualArrayComponent(pt.getActualTypeArguments()[0]);
 
 		throw new IllegalArgumentException();
