@@ -1,6 +1,7 @@
 package de.mineking.javautils.database;
 
 import de.mineking.javautils.ID;
+import de.mineking.javautils.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -32,7 +33,7 @@ public interface Where {
 		return new Where() {
 			@NotNull
 			@Override
-			public Map<String, Object> values() {
+			public Map<String, Pair<String, Object>> values() {
 				return Collections.emptyMap();
 			}
 
@@ -162,23 +163,23 @@ public interface Where {
 	}
 
 	@NotNull
-	Map<String, Object> values();
+	Map<String, Pair<String, Object>> values();
 
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	default Map<String, Object> formatValues(@NotNull Table<?> table) {
 		return values().entrySet().stream()
 				.map(e -> {
-					Field f = table.getKeys().get(e.getKey());
-					if(f == null) throw new IllegalStateException("Table has no column with name '" + e.getKey() + "'");
+					Field f = table.getKeys().get(e.getValue().key());
+					if(f == null) throw new IllegalStateException("Table has no column with name '" + e.getValue().key() + "'");
 
 					TypeMapper mapper = table.getManager().getMapper(f.getType(), f);
 
 					Object value;
 
 					try {
-						value = mapper.format(table.getManager(), f.getType(), f, e.getValue());
+						value = mapper.format(table.getManager(), f.getType(), f, e.getValue().value());
 					} catch(IllegalArgumentException ex) {
-						value = e.getValue();
+						value = e.getValue().value();
 					}
 
 					return Map.entry(e.getKey(), mapper.createArgument(table.getManager(), f.getType(), f, value));
@@ -196,16 +197,16 @@ public interface Where {
 
 	class WhereImpl implements Where {
 		private final String str;
-		private final Map<String, Object> values;
+		private final Map<String, Pair<String, Object>> values;
 
-		public WhereImpl(String str, Map<String, Object> values) {
+		public WhereImpl(String str, Map<String, Pair<String, Object>> values) {
 			this.str = str;
 			this.values = values;
 		}
 
 		public static Where create(String name, Object value, String operator) {
 			String id = ID.generate().asString();
-			return new WhereImpl("\"" + name + "\" " + operator + " :" + id, Map.of(id, value));
+			return new WhereImpl("\"" + name + "\" " + operator + " :" + id, Map.of(id, new Pair<>(name, value)));
 		}
 
 		public static Where combined(Where a, Where b, String operator) {
@@ -220,7 +221,7 @@ public interface Where {
 
 		@NotNull
 		@Override
-		public Map<String, Object> values() {
+		public Map<String, Pair<String, Object>> values() {
 			return values;
 		}
 
