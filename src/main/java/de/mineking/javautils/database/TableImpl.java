@@ -55,7 +55,7 @@ public class TableImpl<T> implements InvocationHandler, Table<T> {
 		var columns = Stream.concat(
 				this.keys.entrySet().stream(),
 				this.columns.entrySet().stream().filter(e -> !keys.containsKey(e.getKey()))
-		).map(e -> '"' + e.getKey() + "\" " + manager.getType(e.getValue().getType(), e.getValue()).getName()).collect(Collectors.joining(", "));
+		).map(e -> '"' + e.getKey() + "\" " + manager.getType(e.getValue().getGenericType(), e.getValue()).getName()).collect(Collectors.joining(", "));
 
 		if(!this.keys.isEmpty()) columns += ", primary key(" + this.keys.keySet().stream().map(field -> '"' + field + '"').collect(Collectors.joining(", ")) + ")";
 
@@ -88,7 +88,7 @@ public class TableImpl<T> implements InvocationHandler, Table<T> {
 		return manager.db.withHandle(handle -> handle.createQuery("select * from <name> <where>")
 				.define("name", name)
 				.define("where", where.format())
-				.bindMap(where.values())
+				.bindMap(where.formatValues(this))
 				.map(this::createObject)
 				.findFirst()
 		);
@@ -100,7 +100,7 @@ public class TableImpl<T> implements InvocationHandler, Table<T> {
 		return manager.db.withHandle(handle -> handle.createQuery("select * from <name> <where> <order>")
 				.define("name", name)
 				.define("where", where.format())
-				.bindMap(where.values())
+				.bindMap(where.formatValues(this))
 				.define("order", order.format())
 				.map(this::createObject)
 				.list()
@@ -112,7 +112,7 @@ public class TableImpl<T> implements InvocationHandler, Table<T> {
 
 		columns.forEach((name, field) -> {
 			try {
-				field.set(instance, manager.parse(field.getType(), field, manager.extract(field.getType(), field, name, set)));
+				field.set(instance, manager.parse(field.getGenericType(), field, manager.extract(field.getGenericType(), field, name, set)));
 			} catch(IllegalAccessException | SQLException e) {
 				throw new RuntimeException(e);
 			}
@@ -131,7 +131,7 @@ public class TableImpl<T> implements InvocationHandler, Table<T> {
 		manager.db.useHandle(handle -> handle.createUpdate("delete from <name> <where>")
 				.define("name", name)
 				.define("where", where.format())
-				.bindMap(where.values())
+				.bindMap(where.formatValues(this))
 				.execute()
 		);
 	}
@@ -182,7 +182,7 @@ public class TableImpl<T> implements InvocationHandler, Table<T> {
 
 			columns.forEach((name, field) -> {
 				try {
-					query.bind(name, manager.getArgument(field.getType(), field, field.get(object)));
+					query.bind(name, manager.getArgument(field.getGenericType(), field, field.get(object)));
 				} catch(IllegalAccessException e) {
 					throw new RuntimeException(e);
 				}
@@ -192,7 +192,7 @@ public class TableImpl<T> implements InvocationHandler, Table<T> {
 					.map((rs, ctx) -> {
 						columns.forEach((name, field) -> {
 							try {
-								field.set(object, manager.parse(field.getType(), field, manager.extract(field.getType(), field, name, rs)));
+								field.set(object, manager.parse(field.getGenericType(), field, manager.extract(field.getGenericType(), field, name, rs)));
 							} catch(IllegalAccessException | SQLException e) {
 								throw new RuntimeException(e);
 							}

@@ -9,11 +9,11 @@ public enum PostgresType implements DataType {
 	 */
 	BIG_INT("bigint"),
 	/**
-	 * 	autoincrementing eight-byte integer
+	 * autoincrementing eight-byte integer
 	 */
 	BIG_SERIAL("bigserial"),
 	/**
-	 * 	fixed-length bit string
+	 * fixed-length bit string
 	 */
 	BIT("bit"),
 	/**
@@ -29,11 +29,11 @@ public enum PostgresType implements DataType {
 	 */
 	BOX("box"),
 	/**
-	 * 	binary data (“byte array”)
+	 * binary data (“byte array”)
 	 */
 	BYTE_ARRAY("bytea"),
 	/**
-	 * 	fixed-length character string
+	 * fixed-length character string
 	 */
 	CHARACTER("character"),
 	/**
@@ -61,7 +61,7 @@ public enum PostgresType implements DataType {
 	 */
 	INET("inet"),
 	/**
-	 * 	signed four-byte integer
+	 * signed four-byte integer
 	 */
 	INTEGER("integer"),
 	/**
@@ -69,7 +69,7 @@ public enum PostgresType implements DataType {
 	 */
 	INTERVAL("interval"),
 	/**
-	 * 	textual JSON data
+	 * textual JSON data
 	 */
 	JSON("json"),
 	/**
@@ -85,7 +85,7 @@ public enum PostgresType implements DataType {
 	 */
 	LSEG("lseg"),
 	/**
-	 * 	MAC (Media Access Control) address
+	 * MAC (Media Access Control) address
 	 */
 	MAC_ADDR("macaddr"),
 	/**
@@ -101,7 +101,7 @@ public enum PostgresType implements DataType {
 	 */
 	NUMERIC("numeric"),
 	/**
-	 * 	geometric path on a plane
+	 * geometric path on a plane
 	 */
 	PATH("path"),
 	/**
@@ -125,7 +125,7 @@ public enum PostgresType implements DataType {
 	 */
 	REAL("real"),
 	/**
-	 * 	signed two-byte integer
+	 * signed two-byte integer
 	 */
 	SMALL_INT("smallint"),
 	/**
@@ -145,11 +145,11 @@ public enum PostgresType implements DataType {
 	 */
 	TIME("time"),
 	/**
-	 * 	time of day, including time zone
+	 * time of day, including time zone
 	 */
 	TIMETZ("timetz"),
 	/**
-	 * 	date and time (no time zone)
+	 * date and time (no time zone)
 	 */
 	TIMESTAMP("timestamp"),
 	/**
@@ -169,15 +169,13 @@ public enum PostgresType implements DataType {
 	 */
 	TXID_SNAPSHOT("txid_snapshot"),
 	/**
-	 * 	universally unique identifier
+	 * universally unique identifier
 	 */
 	UUID("uuid"),
 	/**
 	 * XML data
 	 */
 	XML("xml");
-
-
 
 
 	private final String name;

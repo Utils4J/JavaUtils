@@ -1,12 +1,16 @@
 package de.mineking.javautils.database;
 
 import de.mineking.javautils.ID;
+import de.mineking.javautils.Pair;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public interface Where {
 	@NotNull
@@ -15,12 +19,7 @@ public interface Where {
 		return allOf(table.getKeys().entrySet().stream()
 				.map(e -> {
 					try {
-						var field = e.getValue();
-						var value = table.getManager().getMapper(field.getType(), field).string(table.getManager(), field.getType(), field, field.get(object));
-
-						if(value == null) return Where.empty();
-
-						return equals(e.getKey(), value);
+						return equals(e.getKey(), e.getValue().get(object));
 					} catch(IllegalAccessException ex) {
 						throw new RuntimeException(ex);
 					}
@@ -34,7 +33,7 @@ public interface Where {
 		return new Where() {
 			@NotNull
 			@Override
-			public Map<String, Object> values() {
+			public Map<String, Pair<String, Object>> values() {
 				return Collections.emptyMap();
 			}
 
@@ -104,42 +103,42 @@ public interface Where {
 	}
 
 	@NotNull
-	static Where equals(@NotNull String name, @NotNull Object value) {
+	static Where equals(@NotNull String name, @Nullable Object value) {
 		return WhereImpl.create(name, value, "=");
 	}
 
 	@NotNull
-	static Where notEqual(@NotNull String name, @NotNull Object value) {
+	static Where notEqual(@NotNull String name, @Nullable Object value) {
 		return WhereImpl.create(name, value, "!=");
 	}
 
 	@NotNull
-	static Where like(@NotNull String name, @NotNull Object value) {
+	static Where like(@NotNull String name, @Nullable Object value) {
 		return WhereImpl.create(name, value, "like");
 	}
 
 	@NotNull
-	static Where likeIgnoreCase(@NotNull String name, @NotNull Object value) {
+	static Where likeIgnoreCase(@NotNull String name, @Nullable Object value) {
 		return WhereImpl.create(name, value, "ilike");
 	}
 
 	@NotNull
-	static Where greater(@NotNull String name, @NotNull Object value) {
+	static Where greater(@NotNull String name, @Nullable Object value) {
 		return WhereImpl.create(name, value, ">");
 	}
 
 	@NotNull
-	static Where lower(@NotNull String name, @NotNull Object value) {
+	static Where lower(@NotNull String name, @Nullable Object value) {
 		return WhereImpl.create(name, value, "<");
 	}
 
 	@NotNull
-	static Where greaterOrEqual(@NotNull String name, @NotNull Object value) {
+	static Where greaterOrEqual(@NotNull String name, @Nullable Object value) {
 		return WhereImpl.create(name, value, ">=");
 	}
 
 	@NotNull
-	static Where lowerOrEqual(@NotNull String name, @NotNull Object value) {
+	static Where lowerOrEqual(@NotNull String name, @Nullable Object value) {
 		return WhereImpl.create(name, value, "<=");
 	}
 
@@ -164,7 +163,29 @@ public interface Where {
 	}
 
 	@NotNull
-	Map<String, Object> values();
+	Map<String, Pair<String, Object>> values();
+
+	@SuppressWarnings({"rawtypes", "unchecked"})
+	default Map<String, Object> formatValues(@NotNull Table<?> table) {
+		return values().entrySet().stream()
+				.map(e -> {
+					Field f = table.getColumns().get(e.getValue().key());
+					if(f == null) throw new IllegalStateException("Table has no column with name '" + e.getValue().key() + "'");
+
+					TypeMapper mapper = table.getManager().getMapper(f.getType(), f);
+
+					Object value;
+
+					try {
+						value = mapper.format(table.getManager(), f.getType(), f, e.getValue().value());
+					} catch(IllegalArgumentException ex) {
+						value = e.getValue().value();
+					}
+
+					return Map.entry(e.getKey(), mapper.createArgument(table.getManager(), f.getType(), f, value));
+				})
+				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+	}
 
 	@NotNull
 	String get();
@@ -179,7 +200,7 @@ public interface Where {
 		return new Where() {
 			@NotNull
 			@Override
-			public Map<String, Object> values() {
+			public Map<String, Pair<String, Object>> values() {
 				return Collections.emptyMap();
 			}
 
@@ -198,20 +219,16 @@ public interface Where {
 
 	class WhereImpl implements Where {
 		private final String str;
-		private final Map<String, Object> values;
+		private final Map<String, Pair<String, Object>> values;
 
-		public WhereImpl(String str, Map<String, Object> values) {
+		public WhereImpl(String str, Map<String, Pair<String, Object>> values) {
 			this.str = str;
 			this.values = values;
 		}
 
 		public static Where create(String name, Object value, String operator) {
-			var id = ID.generate().asString();
-
-			var data = new HashMap<String, Object>();
-			data.put(id, value);
-
-			return new WhereImpl("\"" + name + "\" " + operator + " :" + id, data);
+			String id = ID.generate().asString();
+			return new WhereImpl("\"" + name + "\" " + operator + " :" + id, Map.of(id, new Pair<>(name, value)));
 		}
 
 		public static Where combined(Where a, Where b, String operator) {
@@ -226,7 +243,7 @@ public interface Where {
 
 		@NotNull
 		@Override
-		public Map<String, Object> values() {
+		public Map<String, Pair<String, Object>> values() {
 			return values;
 		}
 

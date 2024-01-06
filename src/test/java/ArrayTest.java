@@ -1,6 +1,8 @@
 import de.mineking.javautils.database.Column;
 import de.mineking.javautils.database.DatabaseManager;
 import de.mineking.javautils.database.Table;
+import org.jdbi.v3.core.statement.SqlLogger;
+import org.jdbi.v3.core.statement.StatementContext;
 import org.jdbi.v3.postgres.PostgresPlugin;
 import org.junit.jupiter.api.Test;
 
@@ -32,6 +34,12 @@ public class ArrayTest {
 	public ArrayTest() {
 		manager = new DatabaseManager("jdbc:postgresql://localhost:5433/test", "postgres", "test123");
 		manager.getDriver().installPlugin(new PostgresPlugin());
+		manager.getDriver().setSqlLogger(new SqlLogger() {
+			@Override
+			public void logBeforeExecution(StatementContext context) {
+				System.out.println(context.getParsedSql().getSql());
+			}
+		});
 
 		table = manager.getTable(ATest.class, ATest::new, "array_test").createTable();
 	}
@@ -39,7 +47,7 @@ public class ArrayTest {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void insert() {
-		table.insert(new ATest(new Set[] {Set.of("a", "b", "c"), Set.of("d", "e"), Set.of()}));
+		table.insert(new ATest(new Set[] {Set.of("a", "b", "c", "d", "e"), Set.of("d", "e"), Set.of(), Set.of("a")}));
 		//table.insert(new ATest(new Integer[][] {{1, 2, 3}, {4, 5, 6}}));
 	}
 

@@ -6,28 +6,31 @@ import com.google.gson.ToNumberStrategy;
 import de.mineking.javautils.ID;
 import de.mineking.javautils.database.type.DataType;
 import de.mineking.javautils.database.type.PostgresType;
+import de.mineking.javautils.reflection.ReflectionUtils;
 import org.jdbi.v3.core.argument.Argument;
 import org.jdbi.v3.core.statement.StatementContext;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.*;
-import java.util.stream.Stream;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public interface TypeMapper<T, R> {
-	boolean accepts(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f);
+	boolean accepts(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f);
 
 	@NotNull
-	DataType getType(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f);
+	DataType getType(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f);
 
 	@NotNull
-	default Argument createArgument(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f, @Nullable T value) {
+	default Argument createArgument(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f, @Nullable T value) {
 		return new Argument() {
 			@Override
 			public void apply(int position, PreparedStatement statement, StatementContext ctx) throws SQLException {
@@ -43,142 +46,142 @@ public interface TypeMapper<T, R> {
 
 	@Nullable
 	@SuppressWarnings("unchecked")
-	default T string(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f, @Nullable R value) {
+	default T format(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f, @Nullable R value) {
 		return (T) value;
 	}
 
 	@Nullable
-	T extract(@NotNull ResultSet set, @NotNull String name, @NotNull Class<?> target) throws SQLException;
+	T extract(@NotNull ResultSet set, @NotNull String name, @NotNull Type target) throws SQLException;
 
 	@SuppressWarnings("unchecked")
 	@Nullable
-	default R parse(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field field, @Nullable T value) {
+	default R parse(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field field, @Nullable T value) {
 		return (R) value;
 	}
 
 	TypeMapper<Integer, Integer> SERIAL = new TypeMapper<>() {
 		@Override
-		public boolean accepts(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
-			return f.getAnnotation(Column.class).autoincrement() && (int.class.isAssignableFrom(type) || long.class.isAssignableFrom(type));
+		public boolean accepts(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f) {
+			return f.getAnnotation(Column.class).autoincrement() && (type.equals(int.class) || type.equals(long.class));
 		}
 
 		@NotNull
 		@Override
-		public DataType getType(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
-			return int.class.isAssignableFrom(type) ? PostgresType.SERIAL : PostgresType.BIG_SERIAL;
+		public DataType getType(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f) {
+			return type.equals(int.class) ? PostgresType.SERIAL : PostgresType.BIG_SERIAL;
 		}
 
 		@Nullable
 		@Override
-		public Integer extract(@NotNull ResultSet set, @NotNull String name, @NotNull Class<?> target) throws SQLException {
+		public Integer extract(@NotNull ResultSet set, @NotNull String name, @NotNull Type target) throws SQLException {
 			return (Integer) set.getObject(name);
 		}
 	};
 
 	TypeMapper<Integer, Integer> INTEGER = new TypeMapper<>() {
 		@Override
-		public boolean accepts(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
-			return int.class.isAssignableFrom(type) || Integer.class.isAssignableFrom(type);
+		public boolean accepts(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f) {
+			return type.equals(int.class) || type.equals(Integer.class);
 		}
 
 		@NotNull
 		@Override
-		public DataType getType(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
+		public DataType getType(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f) {
 			return PostgresType.INTEGER;
 		}
 
 		@Nullable
 		@Override
-		public Integer extract(@NotNull ResultSet set, @NotNull String name, @NotNull Class<?> target) throws SQLException {
+		public Integer extract(@NotNull ResultSet set, @NotNull String name, @NotNull Type target) throws SQLException {
 			return (Integer) set.getObject(name);
 		}
 	};
 
 	TypeMapper<Long, Long> LONG = new TypeMapper<>() {
 		@Override
-		public boolean accepts(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
-			return long.class.isAssignableFrom(type) || Long.class.isAssignableFrom(type);
+		public boolean accepts(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f) {
+			return type.equals(long.class) || type.equals(Long.class);
 		}
 
 		@NotNull
 		@Override
-		public DataType getType(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
+		public DataType getType(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f) {
 			return PostgresType.BIG_INT;
 		}
 
 		@Nullable
 		@Override
-		public Long extract(@NotNull ResultSet set, @NotNull String name, @NotNull Class<?> target) throws SQLException {
+		public Long extract(@NotNull ResultSet set, @NotNull String name, @NotNull Type target) throws SQLException {
 			return (Long) set.getObject(name);
 		}
 	};
 
 	TypeMapper<Double, Double> DOUBLE = new TypeMapper<>() {
 		@Override
-		public boolean accepts(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
-			return double.class.isAssignableFrom(type) || Double.class.isAssignableFrom(type);
+		public boolean accepts(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f) {
+			return type.equals(double.class) || type.equals(Double.class);
 		}
 
 		@NotNull
 		@Override
-		public DataType getType(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
+		public DataType getType(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f) {
 			return PostgresType.NUMERIC;
 		}
 
 		@Nullable
 		@Override
-		public Double extract(@NotNull ResultSet set, @NotNull String name, @NotNull Class<?> target) throws SQLException {
+		public Double extract(@NotNull ResultSet set, @NotNull String name, @NotNull Type target) throws SQLException {
 			return (Double) set.getObject(name);
 		}
 	};
 
 	TypeMapper<Boolean, Boolean> BOOLEAN = new TypeMapper<>() {
 		@Override
-		public boolean accepts(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
-			return boolean.class.isAssignableFrom(type) || Boolean.class.isAssignableFrom(type);
+		public boolean accepts(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f) {
+			return type.equals(boolean.class) || type.equals(Boolean.class);
 		}
 
 		@NotNull
 		@Override
-		public DataType getType(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
+		public DataType getType(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f) {
 			return PostgresType.BOOLEAN;
 		}
 
 		@Nullable
 		@Override
-		public Boolean extract(@NotNull ResultSet set, @NotNull String name, @NotNull Class<?> target) throws SQLException {
+		public Boolean extract(@NotNull ResultSet set, @NotNull String name, @NotNull Type target) throws SQLException {
 			return (Boolean) set.getObject(name);
 		}
 	};
 
 	TypeMapper<String, String> STRING = new TypeMapper<>() {
 		@Override
-		public boolean accepts(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
-			return String.class.isAssignableFrom(type);
+		public boolean accepts(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f) {
+			return ReflectionUtils.getClass(type).isAssignableFrom(String.class);
 		}
 
 		@NotNull
 		@Override
-		public DataType getType(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
+		public DataType getType(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f) {
 			return PostgresType.TEXT;
 		}
 
 		@Nullable
 		@Override
-		public String extract(@NotNull ResultSet set, @NotNull String name, @NotNull Class<?> target) throws SQLException {
+		public String extract(@NotNull ResultSet set, @NotNull String name, @NotNull Type target) throws SQLException {
 			return set.getString(name);
 		}
 	};
 
 	TypeMapper<Instant, Instant> TIMESTAMP = new TypeMapper<>() {
 		@Override
-		public boolean accepts(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
-			return Instant.class.isAssignableFrom(type);
+		public boolean accepts(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f) {
+			return ReflectionUtils.getClass(type).isAssignableFrom(Instant.class);
 		}
 
 		@NotNull
 		@Override
-		public Argument createArgument(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f, @Nullable Instant value) {
+		public Argument createArgument(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f, @Nullable Instant value) {
 			return new Argument() {
 				@Override
 				public void apply(int position, PreparedStatement statement, StatementContext ctx) throws SQLException {
@@ -194,13 +197,13 @@ public interface TypeMapper<T, R> {
 
 		@NotNull
 		@Override
-		public DataType getType(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
+		public DataType getType(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f) {
 			return PostgresType.TIMESTAMP;
 		}
 
 		@Nullable
 		@Override
-		public Instant extract(@NotNull ResultSet set, @NotNull String name, @NotNull Class<?> target) throws SQLException {
+		public Instant extract(@NotNull ResultSet set, @NotNull String name, @NotNull Type target) throws SQLException {
 			var timestamp = set.getTimestamp(name);
 			return timestamp == null ? null : timestamp.toInstant();
 		}
@@ -208,125 +211,118 @@ public interface TypeMapper<T, R> {
 
 	TypeMapper<String, ID> MKID = new TypeMapper<>() {
 		@Override
-		public boolean accepts(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
-			return ID.class.isAssignableFrom(type);
+		public boolean accepts(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f) {
+			return type.equals(ID.class);
 		}
 
 		@NotNull
 		@Override
-		public DataType getType(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
+		public DataType getType(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f) {
 			return PostgresType.TEXT;
 		}
 
 		@NotNull
 		@Override
-		public String string(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f, @Nullable ID value) {
+		public String format(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f, @Nullable ID value) {
 			return value == null ? ID.generate().asString() : value.asString();
 		}
 
 		@Nullable
 		@Override
-		public String extract(@NotNull ResultSet set, @NotNull String name, @NotNull Class<?> target) throws SQLException {
+		public String extract(@NotNull ResultSet set, @NotNull String name, @NotNull Type target) throws SQLException {
 			return set.getString(name);
 		}
 
 		@Nullable
 		@Override
-		public de.mineking.javautils.ID parse(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field field, @Nullable String value) {
+		public ID parse(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field field, @Nullable String value) {
 			return value == null ? null : ID.decode(value);
 		}
 	};
 
 	TypeMapper<Object, Optional<?>> OPTIONAL = new TypeMapper<>() {
 		@Override
-		public boolean accepts(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field field) {
+		public boolean accepts(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field field) {
 			return type.equals(Optional.class);
 		}
 
 		@NotNull
 		@Override
-		public DataType getType(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
-			var p = ((ParameterizedType) f.getGenericType()).getActualTypeArguments()[0];
-			return manager.getType((Class<?>) p, f);
+		public DataType getType(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f) {
+			return manager.getType(ReflectionUtils.getComponentType(type), f);
 		}
 
 		@Nullable
 		@Override
-		public Object string(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f, @Nullable Optional<?> value) {
+		public Object format(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f, @Nullable Optional<?> value) {
 			if(value == null) return null;
 
-			var p = ((ParameterizedType) f.getGenericType()).getActualTypeArguments()[0];
-			return manager.getMapper((Class<?>) p, f).string(manager, (Class<?>) p, f, value.orElse(null));
+			var p = ReflectionUtils.getComponentType(type);
+			return manager.getMapper(p, f).format(manager, p, f, value.orElse(null));
 		}
 
 		@Nullable
 		@Override
-		public Object extract(@NotNull ResultSet set, @NotNull String name, @NotNull Class<?> target) throws SQLException {
+		public Object extract(@NotNull ResultSet set, @NotNull String name, @NotNull Type target) throws SQLException {
 			return set.getObject(name);
 		}
 
 		@NotNull
 		@Override
-		public Optional<?> parse(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field field, @Nullable Object value) {
+		public Optional<?> parse(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field field, @Nullable Object value) {
 			var p = ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
-			return Optional.ofNullable(manager.parse((Class<?>) p, field, value));
+			return Optional.ofNullable(manager.parse(p, field, value));
 		}
 	};
 
 	TypeMapper<String, Enum<?>> ENUM = new TypeMapper<>() {
 		@Override
-		public boolean accepts(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
-			return type.isEnum();
+		public boolean accepts(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f) {
+			return ReflectionUtils.getClass(type).isEnum();
 		}
 
 		@NotNull
 		@Override
-		public DataType getType(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
+		public DataType getType(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f) {
 			return PostgresType.TEXT;
 		}
 
 		@Nullable
 		@Override
-		public String string(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f, @Nullable Enum<?> value) {
+		public String format(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f, @Nullable Enum<?> value) {
 			return value == null ? null : value.name();
 		}
 
 		@Nullable
 		@Override
-		public String extract(@NotNull ResultSet set, @NotNull String name, @NotNull Class<?> target) throws SQLException {
+		public String extract(@NotNull ResultSet set, @NotNull String name, @NotNull Type target) throws SQLException {
 			return set.getString(name);
 		}
 
 		@Nullable
 		@Override
-		public Enum<?> parse(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field field, @Nullable String value) {
+		public Enum<?> parse(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field field, @Nullable String value) {
 			if(value == null) return null;
-			return getEnumConstant(type, value).orElse(null);
-		}
-
-		private Optional<Enum<?>> getEnumConstant(Class<?> type, String name) {
-			return Arrays.stream((Enum<?>[]) type.getEnumConstants())
-					.filter(c -> c.name().equals(name))
-					.findFirst();
+			return ReflectionUtils.getEnumConstant(type, value).orElse(null);
 		}
 	};
 
 	TypeMapper<Object[], ?> ARRAY = new TypeMapper<>() {
 		@Override
-		public boolean accepts(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
-			return type.isArray() || Collection.class.isAssignableFrom(type);
+		public boolean accepts(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f) {
+			return ReflectionUtils.isArray(type, true);
 		}
 
 		@NotNull
 		@Override
-		public DataType getType(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
-			var component = getComponentType(type, f.getGenericType());
+		public DataType getType(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f) {
+			var component = ReflectionUtils.getComponentType(type);
 			return DataType.ofName(manager.getType(component, f).getName() + "[]");
 		}
 
 		@NotNull
 		@Override
-		public Argument createArgument(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f, @Nullable Object[] value) {
+		public Argument createArgument(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f, @Nullable Object[] value) {
 			return new Argument() {
 				@Override
 				public void apply(int position, PreparedStatement statement, StatementContext ctx) throws SQLException {
@@ -335,83 +331,68 @@ public interface TypeMapper<T, R> {
 						return;
 					}
 
-					var c = getComponentType(type, f.getGenericType());
-					while(c.isArray() || Collection.class.isAssignableFrom(c)) c = getComponentType(c, f.getGenericType());
-					DataType t = manager.getType(c, f);
+					var component = ReflectionUtils.getActualArrayComponent(type);
+					var type = manager.getType(component, f);
 
-					statement.setArray(position, statement.getConnection().createArrayOf(t.getName(), toSql(manager, value, f)));
+					statement.setArray(position, statement.getConnection().createArrayOf(type.getName(), value));
 				}
 
 				@Override
 				public String toString() {
-					return type.isArray() ? Arrays.deepToString((Object[]) value) : Objects.toString(value);
+					return Arrays.deepToString(value);
 				}
 			};
 		}
 
-		private Object[] toSql(DatabaseManager manager, Object o, Field field) {
-			var component = getComponentType(o.getClass(), field.getGenericType());
+		@Nullable
+		@Override
+		public Object[] format(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f, @Nullable Object value) {
+			if(value == null) return null;
 
-			if(component.isArray() || Collection.class.isAssignableFrom(component)) {
-				var maxLength = stream(o).filter(Objects::nonNull).mapToInt(e -> e.getClass().isArray() ? ((Object[]) e).length : ((Collection<?>) e).size()).max().orElse(0);
-				if(maxLength == 0) return null;
+			var component = ReflectionUtils.getComponentType(type);
 
-				return stream(o)
-						.map(e -> {
-							if(e == null) return new Object[0];
-							return e.getClass().isArray() ? (Object[]) e : ((Collection<?>) e).toArray(i -> (Object[]) Array.newInstance(getComponentType(component, field.getGenericType()), i));
-						})
-						.map(e -> Arrays.copyOf(e, maxLength))
-						.map(e -> toSql(manager, e, field))
-						.toArray();
+			if(ReflectionUtils.isArray(component, true)) {
+				var maxLength = new AtomicInteger(0);
+				var array = ReflectionUtils.stream(value)
+						.map(x -> manager.format(component, f, x))
+						.map(x -> x == null ? ReflectionUtils.createArray(component, 0) : (Object[]) x)
+						.peek(x -> maxLength.set(Math.max(maxLength.get(), x.length)))
+						.toList();
+
+				return array.stream()
+						.map(v -> Arrays.copyOf(v, maxLength.get()))
+						.toArray(i -> ReflectionUtils.createArray(ReflectionUtils.getComponentType(component), i, maxLength.get()));
+			} else {
+				return ReflectionUtils.stream(value)
+						.map(x -> manager.format(component, f, x))
+						.toArray(i -> ReflectionUtils.createArray(component, i));
 			}
-
-			return stream(o).map(e -> manager.getMapper(component, field).string(manager, component, field, e)).toArray();
-		}
-
-		private Stream<?> stream(Object o) {
-			return o.getClass().isArray() ? Arrays.stream((Object[]) o) : ((Collection<?>) o).stream();
 		}
 
 		@Nullable
 		@Override
-		public Object[] extract(@NotNull ResultSet set, @NotNull String name, @NotNull Class<?> target) throws SQLException {
+		public Object[] extract(@NotNull ResultSet set, @NotNull String name, @NotNull Type target) throws SQLException {
 			var temp = set.getArray(name);
 			if(temp == null) return null;
+
 			else return (Object[]) temp.getArray();
 		}
 
 		@Nullable
 		@Override
-		public Object parse(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field field, @Nullable Object[] value) {
-			var component = getComponentType(type, field.getGenericType());
-			if(value == null) return type.isArray() ? new Object[0] : createCollection(type, component, Collections.emptyList());
+		public Object parse(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field field, @Nullable Object[] value) {
+			if(value == null) return null;
+
+			var component = ReflectionUtils.getComponentType(type);
 
 			var array = Arrays.stream(value)
-					.filter(o -> component.isArray() || Collection.class.isAssignableFrom(component) || o != null)
-					.map(e -> manager.parse(component, field, e))
+					.filter(x -> ReflectionUtils.isArray(component, true) || x != null)
+					.map(v -> manager.parse(component, field, v))
 					.toList();
 
-			return type.isArray() ? array.toArray(i -> (Object[]) Array.newInstance(component, i)) : createCollection(type, component, array);
-		}
-
-		@Nullable
-		@Override
-		public Object[] string(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f, @Nullable Object value) {
-			if(value == null) return null;
-			return type.isArray() ? (Object[]) value : ((Collection<?>) value).toArray(i -> (Object[]) Array.newInstance(getComponentType(type, f.getGenericType()), i));
-		}
-
-		private Class<?> getComponentType(Class<?> type, Type generic) {
-			if(type.isArray()) return type.getComponentType();
-			else return getClass(generic);
-		}
-
-		private Class<?> getClass(Type type) {
-			if(type instanceof Class<?> c) return c;
-			else if(type instanceof GenericArrayType g) return getClass(g.getGenericComponentType());
-			else if(type instanceof ParameterizedType p) return getClass(p.getActualTypeArguments()[0]);
-			throw new IllegalArgumentException();
+			return ReflectionUtils.isArray(type, false)
+					? array.toArray(i -> ReflectionUtils.createArray(component, i))
+					: createCollection(ReflectionUtils.getClass(type), ReflectionUtils.getClass(component), array);
 		}
 
 		@SuppressWarnings("unchecked")
@@ -441,13 +422,13 @@ public interface TypeMapper<T, R> {
 				.create();
 
 		@Override
-		public boolean accepts(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
+		public boolean accepts(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f) {
 			return f.isAnnotationPresent(Json.class);
 		}
 
 		@NotNull
 		@Override
-		public Argument createArgument(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f, @Nullable String value) {
+		public Argument createArgument(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f, @Nullable String value) {
 			return new Argument() {
 				@Override
 				public void apply(int position, PreparedStatement statement, StatementContext ctx) throws SQLException {
@@ -463,25 +444,25 @@ public interface TypeMapper<T, R> {
 
 		@NotNull
 		@Override
-		public String string(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f, @Nullable Object value) {
+		public String format(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f, @Nullable Object value) {
 			return gson.toJson(value);
 		}
 
 		@NotNull
 		@Override
-		public DataType getType(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field f) {
+		public DataType getType(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f) {
 			return PostgresType.TEXT;
 		}
 
 		@Nullable
 		@Override
-		public String extract(@NotNull ResultSet set, @NotNull String name, @NotNull Class<?> target) throws SQLException {
+		public String extract(@NotNull ResultSet set, @NotNull String name, @NotNull Type target) throws SQLException {
 			return set.getString(name);
 		}
 
 		@Nullable
 		@Override
-		public Object parse(@NotNull DatabaseManager manager, @NotNull Class<?> type, @NotNull Field field, @Nullable String value) {
+		public Object parse(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field field, @Nullable String value) {
 			return value == null ? null : gson.fromJson(value, type);
 		}
 	};
