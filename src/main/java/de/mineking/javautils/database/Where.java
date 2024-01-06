@@ -2,6 +2,7 @@ package de.mineking.javautils.database;
 
 import de.mineking.javautils.ID;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
@@ -101,42 +102,42 @@ public interface Where {
 	}
 
 	@NotNull
-	static Where equals(@NotNull String name, @NotNull Object value) {
+	static Where equals(@NotNull String name, @Nullable Object value) {
 		return WhereImpl.create(name, value, "=");
 	}
 
 	@NotNull
-	static Where notEqual(@NotNull String name, @NotNull Object value) {
+	static Where notEqual(@NotNull String name, @Nullable Object value) {
 		return WhereImpl.create(name, value, "!=");
 	}
 
 	@NotNull
-	static Where like(@NotNull String name, @NotNull Object value) {
+	static Where like(@NotNull String name, @Nullable Object value) {
 		return WhereImpl.create(name, value, "like");
 	}
 
 	@NotNull
-	static Where likeIgnoreCase(@NotNull String name, @NotNull Object value) {
+	static Where likeIgnoreCase(@NotNull String name, @Nullable Object value) {
 		return WhereImpl.create(name, value, "ilike");
 	}
 
 	@NotNull
-	static Where greater(@NotNull String name, @NotNull Object value) {
+	static Where greater(@NotNull String name, @Nullable Object value) {
 		return WhereImpl.create(name, value, ">");
 	}
 
 	@NotNull
-	static Where lower(@NotNull String name, @NotNull Object value) {
+	static Where lower(@NotNull String name, @Nullable Object value) {
 		return WhereImpl.create(name, value, "<");
 	}
 
 	@NotNull
-	static Where greaterOrEqual(@NotNull String name, @NotNull Object value) {
+	static Where greaterOrEqual(@NotNull String name, @Nullable Object value) {
 		return WhereImpl.create(name, value, ">=");
 	}
 
 	@NotNull
-	static Where lowerOrEqual(@NotNull String name, @NotNull Object value) {
+	static Where lowerOrEqual(@NotNull String name, @Nullable Object value) {
 		return WhereImpl.create(name, value, "<=");
 	}
 
