@@ -169,7 +169,7 @@ public interface Where {
 	default Map<String, Object> formatValues(@NotNull Table<?> table) {
 		return values().entrySet().stream()
 				.map(e -> {
-					Field f = table.getKeys().get(e.getValue().key());
+					Field f = table.getColumns().get(e.getValue().key());
 					if(f == null) throw new IllegalStateException("Table has no column with name '" + e.getValue().key() + "'");
 
 					TypeMapper mapper = table.getManager().getMapper(f.getType(), f);
