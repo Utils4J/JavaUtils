@@ -81,7 +81,7 @@ public interface TypeMapper<T, R> {
 	TypeMapper<Integer, Integer> INTEGER = new TypeMapper<>() {
 		@Override
 		public boolean accepts(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f) {
-			return type.equals(int.class) || type.equals(long.class);
+			return type.equals(int.class) || type.equals(Integer.class);
 		}
 
 		@NotNull
