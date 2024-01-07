@@ -93,8 +93,7 @@ public interface Where {
 
 	@NotNull
 	static Where noneOf(@NotNull Where where, @NotNull Where... others) {
-		for(var w : others) where = where.and(w.not());
-		return where;
+		return anyOf(where, others).not();
 	}
 
 	@NotNull
