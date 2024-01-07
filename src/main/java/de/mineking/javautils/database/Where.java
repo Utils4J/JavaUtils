@@ -178,7 +178,7 @@ public interface Where {
 
 					try {
 						value = mapper.format(table.getManager(), f.getType(), f, e.getValue().value());
-					} catch(IllegalArgumentException ex) {
+					} catch(IllegalArgumentException | ClassCastException ex) {
 						value = e.getValue().value();
 					}
 
