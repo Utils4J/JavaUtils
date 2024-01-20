@@ -12,25 +12,25 @@ public final class FileUtils {
 	private FileUtils() {}
 
 	public static byte[] readBytes(@NotNull File file) throws IOException {
-		try (FileInputStream fis = new FileInputStream(file)) {
+		try(FileInputStream fis = new FileInputStream(file)) {
 			return fis.readAllBytes();
 		}
 	}
 
 	public static byte[] readBytes(@NotNull String name) throws IOException {
-		try (FileInputStream fis = new FileInputStream(name)) {
+		try(FileInputStream fis = new FileInputStream(name)) {
 			return fis.readAllBytes();
 		}
 	}
 
 	public static void saveBytes(@NotNull File file, byte[] data) throws IOException {
-		try (FileOutputStream fos = new FileOutputStream(file)) {
+		try(FileOutputStream fos = new FileOutputStream(file)) {
 			fos.write(data);
 		}
 	}
 
 	public static void saveBytes(@NotNull String name, byte[] data) throws IOException {
-		try (FileOutputStream fos = new FileOutputStream(name)) {
+		try(FileOutputStream fos = new FileOutputStream(name)) {
 			fos.write(data);
 		}
 	}
@@ -42,7 +42,7 @@ public final class FileUtils {
 
 	@NotNull
 	public static String getExtension(@NotNull String name) {
-		while (name.endsWith(".")) name = name.substring(0, name.length()-1);
-		return name.substring(name.lastIndexOf('.')+1);
+		while(name.endsWith(".")) name = name.substring(0, name.length() - 1);
+		return name.substring(name.lastIndexOf('.') + 1);
 	}
 }
