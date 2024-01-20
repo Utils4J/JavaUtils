@@ -29,7 +29,7 @@ public enum PostgresType implements DataType {
 	 */
 	BOX("box"),
 	/**
-	 * binary data (“byte array”)
+	 * binary data ("byte array")
 	 */
 	BYTE_ARRAY("bytea"),
 	/**
