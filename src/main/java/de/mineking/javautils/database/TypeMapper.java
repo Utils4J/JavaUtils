@@ -209,6 +209,38 @@ public interface TypeMapper<T, R> {
 		}
 	};
 
+	TypeMapper<String, java.util.UUID> UUID = new TypeMapper<>() {
+		@Override
+		public boolean accepts(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f) {
+			return type.equals(java.util.UUID.class);
+		}
+
+		@NotNull
+		@Override
+		public DataType getType(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f) {
+			return PostgresType.UUID;
+		}
+
+
+		@NotNull
+		@Override
+		public String format(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f, @Nullable java.util.UUID value) {
+			return value == null ? java.util.UUID.randomUUID().toString() : value.toString();
+		}
+
+		@Nullable
+		@Override
+		public String extract(@NotNull ResultSet set, @NotNull String name, @NotNull Type target) throws SQLException {
+			return set.getString(name);
+		}
+
+		@Nullable
+		@Override
+		public java.util.UUID parse(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field field, @Nullable String value) {
+			return value == null ? null : java.util.UUID.fromString(value);
+		}
+	};
+
 	TypeMapper<String, ID> MKID = new TypeMapper<>() {
 		@Override
 		public boolean accepts(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f) {

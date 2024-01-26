@@ -38,6 +38,7 @@ public class DatabaseManager {
 		mappers.add(TypeMapper.BOOLEAN);
 		mappers.add(TypeMapper.STRING);
 		mappers.add(TypeMapper.TIMESTAMP);
+		mappers.add(TypeMapper.UUID);
 		mappers.add(TypeMapper.MKID);
 		mappers.add(TypeMapper.OPTIONAL);
 		mappers.add(TypeMapper.ENUM);
