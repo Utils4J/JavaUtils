@@ -56,13 +56,13 @@ public interface Table<T> {
 				.toList();
 	}
 
-	void delete(@NotNull Where where);
+	int delete(@NotNull Where where);
 
-	default void delete(@NotNull T object) {
-		delete(Where.of(this, object));
+	default int delete(@NotNull T object) {
+		return delete(Where.of(this, object));
 	}
 
-	default void deleteAll() {
-		delete(Where.empty());
+	default int deleteAll() {
+		return delete(Where.empty());
 	}
 }

@@ -127,8 +127,8 @@ public class TableImpl<T> implements InvocationHandler, Table<T> {
 	}
 
 	@Override
-	public void delete(@NotNull Where where) {
-		manager.db.useHandle(handle -> handle.createUpdate("delete from <name> <where>")
+	public int delete(@NotNull Where where) {
+		return manager.db.withHandle(handle -> handle.createUpdate("delete from <name> <where>")
 				.define("name", name)
 				.define("where", where.format())
 				.bindMap(where.formatValues(this))
