@@ -135,6 +135,24 @@ public interface TypeMapper<T, R> {
 		}
 	};
 
+	TypeMapper<byte[], byte[]> BLOB = new TypeMapper<>() {
+		@Override
+		public boolean accepts(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f) {
+			return type.equals(byte[].class);
+		}
+
+		@NotNull
+		@Override
+		public DataType getType(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f) {
+			return PostgresType.BYTE_ARRAY;
+		}
+
+		@Override
+		public byte[] extract(@NotNull ResultSet set, @NotNull String name, @NotNull Type target) throws SQLException {
+			return set.getBytes(name);
+		}
+	};
+
 	TypeMapper<Boolean, Boolean> BOOLEAN = new TypeMapper<>() {
 		@Override
 		public boolean accepts(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f) {
