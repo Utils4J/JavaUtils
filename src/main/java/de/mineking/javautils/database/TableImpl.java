@@ -1,6 +1,9 @@
 package de.mineking.javautils.database;
 
+import de.mineking.javautils.database.exception.ConflictException;
+import org.jdbi.v3.core.result.ResultProducers;
 import org.jdbi.v3.core.statement.StatementContext;
+import org.jdbi.v3.core.statement.Update;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.*;
@@ -136,9 +139,89 @@ public class TableImpl<T> implements InvocationHandler, Table<T> {
 		);
 	}
 
+	private boolean execute(@NotNull T object, Update query) {
+		columns.forEach((name, field) -> {
+			try {
+				query.bind(name, manager.getArgument(field.getGenericType(), field, field.get(object)));
+			} catch(IllegalAccessException e) {
+				throw new RuntimeException(e);
+			}
+		});
+
+		return query.execute(ResultProducers.returningResults())
+				.map((rs, ctx) -> {
+					columns.forEach((name, field) -> {
+						try {
+							field.set(object, manager.parse(field.getGenericType(), field, manager.extract(field.getGenericType(), field, name, rs)));
+						} catch(IllegalAccessException | SQLException e) {
+							throw new RuntimeException(e);
+						}
+					});
+					return true;
+				}).findFirst().orElse(false);
+	}
+
 	@NotNull
 	@Override
-	public T insert(@NotNull T object) {
+	public T insert(@NotNull T object) throws ConflictException {
+		var sql = "insert into <name>(<columns>) values(<values>) on conflict do nothing returning *";
+
+		var updated = manager.db.withHandle(handle -> {
+			var query = handle.createUpdate(sql)
+					.define("name", name)
+					.define("columns", columns.entrySet().stream()
+							.filter(e -> {
+								try {
+									return !(e.getValue().getAnnotation(Column.class).autoincrement() && ((Number) e.getValue().get(object)).longValue() <= 0);
+								} catch(IllegalAccessException ex) {
+									throw new RuntimeException(ex);
+								}
+							})
+							.map(e -> '"' + e.getKey() + '"')
+							.collect(Collectors.joining(", "))
+					)
+					.define("values", columns.entrySet().stream()
+							.filter(e -> {
+								try {
+									return !(e.getValue().getAnnotation(Column.class).autoincrement() && ((Number) e.getValue().get(object)).longValue() <= 0);
+								} catch(IllegalAccessException ex) {
+									throw new RuntimeException(ex);
+								}
+							})
+							.map(e -> ":" + e.getKey())
+							.collect(Collectors.joining(", "))
+					);
+
+			return execute(object, query);
+		});
+
+		if(updated) return object;
+		else throw new ConflictException();
+	}
+
+	@Override
+	public boolean update(@NotNull T object) {
+		var sql = "update <name> set <update> <where> returning *";
+		var identifier = Where.of(this, object);
+
+		return manager.db.withHandle(handle -> {
+			var query = handle.createUpdate(sql)
+					.define("name", name)
+					.define("update", columns.keySet().stream()
+							.filter(k -> !this.keys.containsKey(k))
+							.map(k -> '"' + k + "\" = :" + k)
+							.collect(Collectors.joining(", "))
+					)
+					.define("where", identifier.format())
+					.bindMap(identifier.formatValues(this));
+
+			return execute(object, query);
+		});
+	}
+
+	@NotNull
+	@Override
+	public T upsert(@NotNull T object) {
 		var sql = "insert into <name>(<columns>) values(<values>) ";
 
 		if(!keys.isEmpty()) sql += " on conflict(<keys>) do update set <update>";
@@ -180,26 +263,7 @@ public class TableImpl<T> implements InvocationHandler, Table<T> {
 							.collect(Collectors.joining(", "))
 					);
 
-			columns.forEach((name, field) -> {
-				try {
-					query.bind(name, manager.getArgument(field.getGenericType(), field, field.get(object)));
-				} catch(IllegalAccessException e) {
-					throw new RuntimeException(e);
-				}
-			});
-
-			query.executeAndReturnGeneratedKeys()
-					.map((rs, ctx) -> {
-						columns.forEach((name, field) -> {
-							try {
-								field.set(object, manager.parse(field.getGenericType(), field, manager.extract(field.getGenericType(), field, name, rs)));
-							} catch(IllegalAccessException | SQLException e) {
-								throw new RuntimeException(e);
-							}
-						});
-
-						return null;
-					}).one();
+			execute(object, query);
 		});
 
 		return object;
