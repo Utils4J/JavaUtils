@@ -201,7 +201,9 @@ public class TableImpl<T> implements InvocationHandler, Table<T> {
 
 	@Override
 	public boolean update(@NotNull T object) {
-		var sql = "update <name> set <update>";
+		var sql = "update <name> set <update> <where> returning *";
+		var identifier = Where.of(this, object);
+
 		return manager.db.withHandle(handle -> {
 			var query = handle.createUpdate(sql)
 					.define("name", name)
@@ -209,7 +211,9 @@ public class TableImpl<T> implements InvocationHandler, Table<T> {
 							.filter(k -> !this.keys.containsKey(k))
 							.map(k -> '"' + k + "\" = :" + k)
 							.collect(Collectors.joining(", "))
-					);
+					)
+					.define("where", identifier.format())
+					.bindMap(identifier.formatValues(this));
 
 			return execute(object, query);
 		});
