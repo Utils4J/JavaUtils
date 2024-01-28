@@ -28,7 +28,7 @@ public class DatabaseTest {
 
 	@Test
 	public void delete() {
-		new TestClass(table, TE.A, EnumSet.noneOf(TE.class)).update().delete();
+		new TestClass(table, TE.A, EnumSet.noneOf(TE.class)).insertOrUpdate().delete();
 	}
 
 	@Test
