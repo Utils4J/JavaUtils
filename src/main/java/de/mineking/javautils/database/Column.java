@@ -11,6 +11,7 @@ public @interface Column {
 	String name() default "";
 
 	boolean key() default false;
+	String modifier() default "";
 
 	boolean autoincrement() default false;
 }
