@@ -1,9 +1,9 @@
 package de.mineking.javautils.database;
 
+import de.mineking.javautils.database.exception.ConflictException;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Field;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -47,22 +47,20 @@ public interface Table<T> {
 	}
 
 	@NotNull
-	T insert(@NotNull T object);
+	T insert(@NotNull T object) throws ConflictException;
+
+	boolean update(@NotNull T object);
 
 	@NotNull
-	default List<T> insertMany(@NotNull Collection<T> objects) {
-		return objects.stream()
-				.map(this::insert)
-				.toList();
+	T upsert(@NotNull T object);
+
+	int delete(@NotNull Where where);
+
+	default int delete(@NotNull T object) {
+		return delete(Where.of(this, object));
 	}
 
-	void delete(@NotNull Where where);
-
-	default void delete(@NotNull T object) {
-		delete(Where.of(this, object));
-	}
-
-	default void deleteAll() {
-		delete(Where.empty());
+	default int deleteAll() {
+		return delete(Where.empty());
 	}
 }

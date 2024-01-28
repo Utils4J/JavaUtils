@@ -1,5 +1,6 @@
 package de.mineking.javautils.database;
 
+import de.mineking.javautils.database.exception.ConflictException;
 import org.jetbrains.annotations.NotNull;
 
 public interface DataClass<T extends DataClass<T>> {
@@ -8,9 +9,19 @@ public interface DataClass<T extends DataClass<T>> {
 
 	@NotNull
 	@SuppressWarnings("unchecked")
-	default DataClass<T> update() {
-		getTable().insert((T) this);
-		return this;
+	default T insert() throws ConflictException {
+		return getTable().insert((T) this);
+	}
+
+	@SuppressWarnings("unchecked")
+	default boolean update() {
+		return getTable().update((T) this);
+	}
+
+	@NotNull
+	@SuppressWarnings("unchecked")
+	default T upsert() {
+		return getTable().upsert((T) this);
 	}
 
 	@NotNull

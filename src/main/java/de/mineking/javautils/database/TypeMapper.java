@@ -135,6 +135,40 @@ public interface TypeMapper<T, R> {
 		}
 	};
 
+	TypeMapper<byte[], byte[]> BLOB = new TypeMapper<>() {
+		@Override
+		public boolean accepts(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f) {
+			return type.equals(byte[].class);
+		}
+
+		@NotNull
+		@Override
+		public DataType getType(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f) {
+			return PostgresType.BYTE_ARRAY;
+		}
+
+		@NotNull
+		@Override
+		public Argument createArgument(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f, @Nullable byte[] value) {
+			return new Argument() {
+				@Override
+				public void apply(int position, PreparedStatement statement, StatementContext ctx) throws SQLException {
+					statement.setObject(position, value);
+				}
+
+				@Override
+				public String toString() {
+					return Base64.getEncoder().encodeToString(value);
+				}
+			};
+		}
+
+		@Override
+		public byte[] extract(@NotNull ResultSet set, @NotNull String name, @NotNull Type target) throws SQLException {
+			return set.getBytes(name);
+		}
+	};
+
 	TypeMapper<Boolean, Boolean> BOOLEAN = new TypeMapper<>() {
 		@Override
 		public boolean accepts(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f) {
@@ -206,6 +240,32 @@ public interface TypeMapper<T, R> {
 		public Instant extract(@NotNull ResultSet set, @NotNull String name, @NotNull Type target) throws SQLException {
 			var timestamp = set.getTimestamp(name);
 			return timestamp == null ? null : timestamp.toInstant();
+		}
+	};
+
+	TypeMapper<java.util.UUID, java.util.UUID> UUID = new TypeMapper<>() {
+		@Override
+		public boolean accepts(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f) {
+			return type.equals(java.util.UUID.class);
+		}
+
+		@NotNull
+		@Override
+		public DataType getType(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f) {
+			return PostgresType.UUID;
+		}
+
+		@NotNull
+		@Override
+		public UUID format(@NotNull DatabaseManager manager, @NotNull Type type, @NotNull Field f, @Nullable java.util.UUID value) {
+			return value == null ? java.util.UUID.randomUUID() : value;
+		}
+
+		@Nullable
+		@Override
+		public UUID extract(@NotNull ResultSet set, @NotNull String name, @NotNull Type target) throws SQLException {
+			var temp = set.getString(name);
+			return temp == null ? null : java.util.UUID.fromString(temp);
 		}
 	};
 
