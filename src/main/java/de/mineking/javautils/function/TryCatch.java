@@ -1,27 +1,20 @@
 package de.mineking.javautils.function;
 
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
 
 import java.util.Optional;
 import java.util.function.Consumer;
 
-public interface TryCatch<E extends Throwable, R> {
-
-	R tryExecute() throws E;
-
-	void catchException(@NotNull E e);
-
-	@SuppressWarnings("unchecked")
-	default Optional<R> execute() {
-		try {
-			return Optional.ofNullable(tryExecute());
-		} catch (Throwable e) {
-			catchException((E) e);
-		}
-		return Optional.empty();
+public class TryCatch {
+	private TryCatch() {
 	}
 
-	//Runnable
+
+	/*
+	Runnable
+	 */
+
 	static <E extends Throwable> void tryAndThrow(@NotNull ThrowingRunnable<E> tryMethod) {
 		tryAndHandle(tryMethod, e -> {
 			if (e instanceof RuntimeException re) throw re;
@@ -37,86 +30,89 @@ public interface TryCatch<E extends Throwable, R> {
 		tryAndHandle(tryMethod, Throwable::printStackTrace);
 	}
 
+	static <E extends Throwable> void tryAndLog(@NotNull ThrowingRunnable<E> tryMethod, @NotNull Logger logger) {
+		tryAndHandle(tryMethod, e -> logger.error("Failed to execute task", e));
+	}
+
+	@SuppressWarnings("unchecked")
 	static <E extends Throwable> void tryAndHandle(@NotNull ThrowingRunnable<E> tryMethod, @NotNull Consumer<E> catchMethod) {
-		new TryCatch<E, Object>() {
-			@Override
-			public Object tryExecute() throws E {
-				tryMethod.run();
-				return null;
-			}
-
-			@Override
-			public void catchException(@NotNull E e) {
-				catchMethod.accept(e);
-			}
-		}.execute();
+		try {
+			tryMethod.run();
+		} catch(Throwable e) {
+			catchMethod.accept((E) e);
+		}
 	}
 
-	//Consumer
+	/*
+	Consumer
+	 */
 
-	static <E extends Throwable, T> void tryAndThrow(@NotNull ThrowingConsumer<E, T> tryMethod, T t) {
-		tryAndHandle(tryMethod, t, e -> {
+	static <E extends Throwable, T> void tryAndThrow(@NotNull ThrowingConsumer<E, T> tryMethod, T arg) {
+		tryAndHandle(tryMethod, arg, e -> {
 			if (e instanceof RuntimeException re) throw re;
 			throw new RuntimeException(e);
 		});
 	}
 
-	static <E extends Throwable, T> void tryAndIgnore(@NotNull ThrowingConsumer<E, T> tryMethod, T t) {
-		tryAndHandle(tryMethod, t, e -> {});
+	static <E extends Throwable, T> void tryAndIgnore(@NotNull ThrowingConsumer<E, T> tryMethod, T arg) {
+		tryAndHandle(tryMethod, arg, e -> {});
 	}
 
-	static <E extends Throwable, T> void tryAndPrint(@NotNull ThrowingConsumer<E, T> tryMethod, T t) {
-		tryAndHandle(tryMethod, t, Throwable::printStackTrace);
+	static <E extends Throwable, T> void tryAndPrint(@NotNull ThrowingConsumer<E, T> tryMethod, T arg) {
+		tryAndHandle(tryMethod, arg, Throwable::printStackTrace);
 	}
 
-	static <E extends Throwable, T> void tryAndHandle(@NotNull ThrowingConsumer<E, T> tryMethod, T t, @NotNull Consumer<E> catchMethod) {
-		new TryCatch<E, Object>() {
-			@Override
-			public Object tryExecute() throws E {
-				tryMethod.accept(t);
-				return null;
-			}
+	static <E extends Throwable, T> void tryAndLog(@NotNull ThrowingConsumer<E, T> tryMethod, T arg, @NotNull Logger logger) {
+		tryAndHandle(tryMethod, arg, e -> logger.error("Failed to execute task", e));
+	}
 
-			@Override
-			public void catchException(@NotNull E e) {
-				catchMethod.accept(e);
-			}
-		}.execute();
+	@SuppressWarnings("unchecked")
+	static <E extends Throwable, T> void tryAndHandle(@NotNull ThrowingConsumer<E, T> tryMethod, T arg, @NotNull Consumer<E> catchMethod) {
+		try {
+			tryMethod.accept(arg);
+		} catch(Throwable e) {
+			catchMethod.accept((E) e);
+		}
 	}
 
 
-	//Function
-	static <E extends Throwable, T, R> Optional<R> tryAndThrow(@NotNull ThrowingFunction<E, T, R> tryMethod, T t) {
-		return tryAndHandle(tryMethod, t, e -> {
+	/*
+	Function
+	 */
+
+	static <E extends Throwable, T, R> Optional<R> tryAndThrow(@NotNull ThrowingFunction<E, T, R> tryMethod, T arg) {
+		return tryAndHandle(tryMethod, arg, e -> {
 			if (e instanceof RuntimeException re) throw re;
 			throw new RuntimeException(e);
 		});
 	}
 
-	static <E extends Throwable, T, R> Optional<R> tryAndIgnore(@NotNull ThrowingFunction<E, T, R> tryMethod, T t) {
-		return tryAndHandle(tryMethod, t, e -> {});
+	static <E extends Throwable, T, R> Optional<R> tryAndIgnore(@NotNull ThrowingFunction<E, T, R> tryMethod, T arg) {
+		return tryAndHandle(tryMethod, arg, e -> {});
 	}
 
-	static <E extends Throwable, T, R> Optional<R> tryAndPrint(@NotNull ThrowingFunction<E, T, R> tryMethod, T t) {
-		return tryAndHandle(tryMethod, t, Throwable::printStackTrace);
+	static <E extends Throwable, T, R> Optional<R> tryAndPrint(@NotNull ThrowingFunction<E, T, R> tryMethod, T arg) {
+		return tryAndHandle(tryMethod, arg, Throwable::printStackTrace);
 	}
 
-	static <E extends Throwable, T, R> Optional<R> tryAndHandle(@NotNull ThrowingFunction<E, T, R> tryMethod, T t, @NotNull Consumer<E> catchMethod) {
-		return new TryCatch<E, R>() {
-			@Override
-			public R tryExecute() throws E {
-				return tryMethod.apply(t);
-			}
+	static <E extends Throwable, T, R> Optional<R> tryAndLog(@NotNull ThrowingFunction<E, T, R> tryMethod, T arg, @NotNull Logger logger) {
+		return tryAndHandle(tryMethod, arg, e -> logger.error("Failed to execute task", e));
+	}
 
-			@Override
-			public void catchException(@NotNull E e) {
-				catchMethod.accept(e);
-			}
-		}.execute();
+	@SuppressWarnings("unchecked")
+	static <E extends Throwable, T, R> Optional<R> tryAndHandle(@NotNull ThrowingFunction<E, T, R> tryMethod, T arg, @NotNull Consumer<E> catchMethod) {
+		try {
+			return Optional.ofNullable(tryMethod.apply(arg));
+		} catch(Throwable e) {
+			catchMethod.accept((E) e);
+			return Optional.empty();
+		}
 	}
 
 
-	//Supplier
+	/*
+	Supplier
+	 */
 
 	static <E extends Throwable, T> Optional<T> tryAndThrow(@NotNull ThrowingSupplier<E, T> tryMethod) {
 		return tryAndHandle(tryMethod, e -> {
@@ -133,19 +129,17 @@ public interface TryCatch<E extends Throwable, R> {
 		return tryAndHandle(tryMethod, Throwable::printStackTrace);
 	}
 
-	static <E extends Throwable, T> Optional<T> tryAndHandle(@NotNull ThrowingSupplier<E, T> tryMethod, @NotNull Consumer<E> catchMethod) {
-		return new TryCatch<E, T>() {
-			@Override
-			public T tryExecute() throws E {
-				return tryMethod.get();
-			}
-
-			@Override
-			public void catchException(@NotNull E e) {
-				catchMethod.accept(e);
-			}
-		}.execute();
+	static <E extends Throwable, T> Optional<T> tryAndLog(@NotNull ThrowingSupplier<E, T> tryMethod, @NotNull Logger logger) {
+		return tryAndHandle(tryMethod, e -> logger.error("Failed to execute task", e));
 	}
 
-
+	@SuppressWarnings("unchecked")
+	static <E extends Throwable, T> Optional<T> tryAndHandle(@NotNull ThrowingSupplier<E, T> tryMethod, @NotNull Consumer<E> catchMethod) {
+		try {
+			return Optional.ofNullable(tryMethod.get());
+		} catch(Throwable e) {
+			catchMethod.accept((E) e);
+			return Optional.empty();
+		}
+	}
 }
