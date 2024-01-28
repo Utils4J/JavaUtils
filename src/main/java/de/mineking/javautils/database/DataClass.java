@@ -20,8 +20,8 @@ public interface DataClass<T extends DataClass<T>> {
 
 	@NotNull
 	@SuppressWarnings("unchecked")
-	default T insertOrUpdate() {
-		return getTable().insertOrUpdate((T) this);
+	default T upsert() {
+		return getTable().upsert((T) this);
 	}
 
 	@NotNull

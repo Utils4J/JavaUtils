@@ -52,7 +52,7 @@ public interface Table<T> {
 	boolean update(@NotNull T object);
 
 	@NotNull
-	T insertOrUpdate(@NotNull T object);
+	T upsert(@NotNull T object);
 
 	int delete(@NotNull Where where);
 

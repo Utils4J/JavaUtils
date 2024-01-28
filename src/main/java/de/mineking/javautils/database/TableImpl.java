@@ -221,7 +221,7 @@ public class TableImpl<T> implements InvocationHandler, Table<T> {
 
 	@NotNull
 	@Override
-	public T insertOrUpdate(@NotNull T object) {
+	public T upsert(@NotNull T object) {
 		var sql = "insert into <name>(<columns>) values(<values>) ";
 
 		if(!keys.isEmpty()) sql += " on conflict(<keys>) do update set <update>";
