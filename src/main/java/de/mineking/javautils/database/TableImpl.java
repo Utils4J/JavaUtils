@@ -207,11 +207,15 @@ public class TableImpl<T> implements InvocationHandler, Table<T> {
 
 	@Override
 	public boolean update(@NotNull T object) {
-		var sql = "update <name> set <update> <where> and 0 not in (select 0 from <name> where <unique>) returning *";
+		var sql = "update <name> set <update> <where>";
 		var identifier = Where.of(this, object);
 
+		if(unique.size() > keys.size()) sql += " and 0 not in (select 0 from <name> where <unique>)";
+
+		final var fSql = sql + " returning *";
+
 		return manager.db.withHandle(handle -> {
-			var query = handle.createUpdate(sql)
+			var query = handle.createUpdate(fSql)
 					.define("name", name)
 					.define("update", columns.keySet().stream()
 							.filter(k -> !this.keys.containsKey(k))
@@ -220,6 +224,7 @@ public class TableImpl<T> implements InvocationHandler, Table<T> {
 					)
 					.define("where", identifier.format())
 					.define("unique", unique.keySet().stream()
+							.filter(k -> !this.keys.containsKey(k))
 							.map(k -> '"' + k + "\" = :" + k)
 							.collect(Collectors.joining(", "))
 					)
