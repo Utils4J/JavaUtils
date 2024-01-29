@@ -210,7 +210,7 @@ public class TableImpl<T> implements InvocationHandler, Table<T> {
 		var sql = "update <name> set <update> <where>";
 		var identifier = Where.of(this, object);
 
-		if(unique.size() > keys.size()) sql += " and 0 not in (select 0 from <name> where <unique>)";
+		if(unique.size() > keys.size()) sql += " and 0 not in (select 0 from <name> <where> and not (<unique>))";
 
 		final var fSql = sql + " returning *";
 
