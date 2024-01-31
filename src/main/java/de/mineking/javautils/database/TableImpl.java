@@ -23,6 +23,7 @@ public class TableImpl<T> implements InvocationHandler, Table<T> {
 
 	private final Map<String, Field> columns = new LinkedHashMap<>();
 	private final Map<String, Field> keys = new LinkedHashMap<>();
+	private final Map<String, Field> unique = new LinkedHashMap<>();
 
 	TableImpl(DatabaseManager manager, Supplier<Table<T>> table, Class<T> type, Supplier<T> instance, String name) {
 		this.manager = manager;
@@ -37,6 +38,7 @@ public class TableImpl<T> implements InvocationHandler, Table<T> {
 
 			columns.put(getColumnName(f), f);
 			if(f.getAnnotation(Column.class).key()) keys.put(getColumnName(f), f);
+			if(f.getAnnotation(Column.class).key() || f.getAnnotation(Column.class).unique()) unique.put(getColumnName(f), f);
 		}
 	}
 
@@ -58,7 +60,11 @@ public class TableImpl<T> implements InvocationHandler, Table<T> {
 		var columns = Stream.concat(
 				this.keys.entrySet().stream(),
 				this.columns.entrySet().stream().filter(e -> !keys.containsKey(e.getKey()))
-		).map(e -> '"' + e.getKey() + "\" " + manager.getType(e.getValue().getGenericType(), e.getValue()).getName() + " " + e.getValue().getAnnotation(Column.class).modifier()).collect(Collectors.joining(", "));
+		).map(e -> '"' + e.getKey() + "\" " +
+				manager.getType(e.getValue().getGenericType(), e.getValue()).getName() + " " +
+				e.getValue().getAnnotation(Column.class).modifier() +
+				(e.getValue().getAnnotation(Column.class).unique() ? " unique" : "")
+		).collect(Collectors.joining(", "));
 
 		if(!this.keys.isEmpty()) columns += ", primary key(" + this.keys.keySet().stream().map(field -> '"' + field + '"').collect(Collectors.joining(", ")) + ")";
 
@@ -201,11 +207,15 @@ public class TableImpl<T> implements InvocationHandler, Table<T> {
 
 	@Override
 	public boolean update(@NotNull T object) {
-		var sql = "update <name> set <update> <where> returning *";
+		var sql = "update <name> set <update> <where>";
 		var identifier = Where.of(this, object);
 
+		if(unique.size() > keys.size()) sql += " and 0 not in (select 0 from <name> <where> and not (<unique>))";
+
+		final var fSql = sql + " returning *";
+
 		return manager.db.withHandle(handle -> {
-			var query = handle.createUpdate(sql)
+			var query = handle.createUpdate(fSql)
 					.define("name", name)
 					.define("update", columns.keySet().stream()
 							.filter(k -> !this.keys.containsKey(k))
@@ -213,6 +223,11 @@ public class TableImpl<T> implements InvocationHandler, Table<T> {
 							.collect(Collectors.joining(", "))
 					)
 					.define("where", identifier.format())
+					.define("unique", unique.keySet().stream()
+							.filter(k -> !this.keys.containsKey(k))
+							.map(k -> '"' + k + "\" = :" + k)
+							.collect(Collectors.joining(", "))
+					)
 					.bindMap(identifier.formatValues(this));
 
 			return execute(object, query);
@@ -224,7 +239,7 @@ public class TableImpl<T> implements InvocationHandler, Table<T> {
 	public T upsert(@NotNull T object) {
 		var sql = "insert into <name>(<columns>) values(<values>) ";
 
-		if(!keys.isEmpty()) sql += " on conflict(<keys>) do update set <update>";
+		if(!unique.isEmpty()) sql += " on conflict(<unique>) do update set <update>";
 
 		var fSql = sql; //Because java
 
@@ -253,7 +268,7 @@ public class TableImpl<T> implements InvocationHandler, Table<T> {
 							.map(e -> ":" + e.getKey())
 							.collect(Collectors.joining(", "))
 					)
-					.define("keys", this.keys.keySet().stream()
+					.define("unique", this.unique.keySet().stream()
 							.map(k -> '"' + k + '"')
 							.collect(Collectors.joining(", "))
 					)
