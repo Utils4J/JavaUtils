@@ -8,7 +8,7 @@ import java.nio.ByteBuffer;
 
 public final class BufferUtils {
 
-	private BufferUtils() {}
+	private BufferUtils() { }
 
 	@NotNull
 	public static ByteBuffer wrapFile(@NotNull String name) throws IOException {

@@ -12,7 +12,7 @@ public interface ThrowingRunnable<E extends Throwable> {
 	 * The general contract of the method {@code run} is that it may
 	 * take any action whatsoever.
 	 *
-	 * @see     java.lang.Thread#run()
+	 * @see java.lang.Thread#run()
 	 */
 	void run() throws E;
 

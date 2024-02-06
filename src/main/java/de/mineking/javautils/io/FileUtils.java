@@ -9,7 +9,7 @@ import java.io.IOException;
 
 public final class FileUtils {
 
-	private FileUtils() {}
+	private FileUtils() { }
 
 	public static byte[] readBytes(@NotNull File file) throws IOException {
 		try(FileInputStream fis = new FileInputStream(file)) {
