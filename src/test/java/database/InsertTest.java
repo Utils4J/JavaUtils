@@ -6,6 +6,8 @@ import de.mineking.javautils.database.exception.ConflictException;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.jdbi.v3.core.statement.SqlLogger;
+import org.jdbi.v3.core.statement.StatementContext;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
@@ -36,6 +38,14 @@ public class InsertTest {
 	public InsertTest() {
 		manager = new DatabaseManager("jdbc:postgresql://localhost:5433/postgres", "postgres", "postgres");
 		table = manager.getTable(TestClass.class, TestClass::new, "insert").createTable();
+
+		manager.getDriver().setSqlLogger(new SqlLogger() {
+			@Override
+			public void logBeforeExecution(StatementContext context) {
+				System.out.println(context.getParsedSql().getSql());
+				System.out.println(context.getBinding());
+			}
+		});
 	}
 
 	@Test
