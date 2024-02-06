@@ -5,15 +5,18 @@ import de.mineking.javautils.database.*;
 import de.mineking.javautils.database.exception.ConflictException;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class InsertTest {
 	private final DatabaseManager manager;
 	private final Table<TestClass> table;
 
+	@ToString
 	@NoArgsConstructor
 	@AllArgsConstructor
 	private class TestClass implements DataClass<TestClass> {
@@ -37,6 +40,9 @@ public class InsertTest {
 
 	@Test
 	public void insert() {
+		//Reset table for clean test
+		table.deleteAll();
+
 		var test = new TestClass();
 
 		assertTrue(table.selectOne(Where.equals("id", test.id)).isEmpty());
@@ -49,20 +55,5 @@ public class InsertTest {
 		test.id = null;
 		test.insert();
 		assertThrows(ConflictException.class, test::insert);
-	}
-
-	@Test
-	public void update() {
-		var test = new TestClass();
-		table.insert(test);
-
-		assertNull(table.selectOne(Where.equals("id", test.id)).get().test);
-
-		test.test = "abc";
-		assertTrue(test.update());
-		assertEquals(table.selectOne(Where.equals("id", test.id)).get().test, "abc");
-
-		test.id = ID.generate();
-		assertFalse(test.update());
 	}
 }

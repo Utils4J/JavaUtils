@@ -1,7 +1,6 @@
 package de.mineking.javautils.database;
 
 import de.mineking.javautils.database.exception.ConflictException;
-import org.jdbi.v3.core.result.ResultProducers;
 import org.jdbi.v3.core.statement.StatementContext;
 import org.jdbi.v3.core.statement.Update;
 import org.jetbrains.annotations.NotNull;
@@ -87,6 +86,12 @@ public class TableImpl<T> implements InvocationHandler, Table<T> {
 
 	@NotNull
 	@Override
+	public Map<String, Field> getUnique() {
+		return unique;
+	}
+
+	@NotNull
+	@Override
 	public Map<String, Field> getKeys() {
 		return keys;
 	}
@@ -145,7 +150,7 @@ public class TableImpl<T> implements InvocationHandler, Table<T> {
 		);
 	}
 
-	private boolean execute(@NotNull T object, Update query) {
+	private boolean execute(@NotNull T object, @NotNull Update query) {
 		columns.forEach((name, field) -> {
 			try {
 				query.bind(name, manager.getArgument(field.getGenericType(), field, field.get(object)));
@@ -154,134 +159,86 @@ public class TableImpl<T> implements InvocationHandler, Table<T> {
 			}
 		});
 
-		return query.execute(ResultProducers.returningResults())
-				.map((rs, ctx) -> {
-					columns.forEach((name, field) -> {
-						try {
-							field.set(object, manager.parse(field.getGenericType(), field, manager.extract(field.getGenericType(), field, name, rs)));
-						} catch(IllegalAccessException | SQLException e) {
-							throw new RuntimeException(e);
-						}
-					});
-					return true;
-				}).findFirst().orElse(false);
+		return query.execute((statementSupplier, ctx) -> {
+			var stmt = statementSupplier.get();
+			var rs = stmt.getResultSet();
+
+			if(rs.next()) {
+				columns.forEach((name, field) -> {
+					try {
+						field.set(object, manager.parse(field.getGenericType(), field, manager.extract(field.getGenericType(), field, name, rs)));
+					} catch(IllegalAccessException | SQLException e) {
+						throw new RuntimeException(e);
+					}
+				});
+				return true;
+			} else return false;
+		});
 	}
 
 	@NotNull
 	@Override
 	public T insert(@NotNull T object) throws ConflictException {
-		var sql = "insert into <name>(<columns>) values(<values>) on conflict do nothing returning *";
+		var check = Where.detectConflict(this, object, true);
+		var sql = "insert into <name>(<columns>) (select <values> where not exists (select from <name> <where>)) returning *";
 
-		var updated = manager.db.withHandle(handle -> {
-			var query = handle.createUpdate(sql)
-					.define("name", name)
-					.define("columns", columns.entrySet().stream()
-							.filter(e -> {
-								try {
-									return !(e.getValue().getAnnotation(Column.class).autoincrement() && ((Number) e.getValue().get(object)).longValue() <= 0);
-								} catch(IllegalAccessException ex) {
-									throw new RuntimeException(ex);
-								}
-							})
-							.map(e -> '"' + e.getKey() + '"')
-							.collect(Collectors.joining(", "))
-					)
-					.define("values", columns.entrySet().stream()
-							.filter(e -> {
-								try {
-									return !(e.getValue().getAnnotation(Column.class).autoincrement() && ((Number) e.getValue().get(object)).longValue() <= 0);
-								} catch(IllegalAccessException ex) {
-									throw new RuntimeException(ex);
-								}
-							})
-							.map(e -> ":" + e.getKey())
-							.collect(Collectors.joining(", "))
-					);
-
-			return execute(object, query);
-		});
+		var updated = manager.db.withHandle(handle -> execute(object, handle.createUpdate(sql)
+				.define("name", name)
+				.define("columns", columns.entrySet().stream()
+						.filter(e -> {
+							try {
+								return !(e.getValue().getAnnotation(Column.class).autoincrement() && ((Number) e.getValue().get(object)).longValue() <= 0);
+							} catch(IllegalAccessException ex) {
+								throw new RuntimeException(ex);
+							}
+						})
+						.map(e -> '"' + e.getKey() + '"')
+						.collect(Collectors.joining(", "))
+				)
+				.define("values", columns.entrySet().stream()
+						.filter(e -> {
+							try {
+								return !(e.getValue().getAnnotation(Column.class).autoincrement() && ((Number) e.getValue().get(object)).longValue() <= 0);
+							} catch(IllegalAccessException ex) {
+								throw new RuntimeException(ex);
+							}
+						})
+						.map(e -> ":" + e.getKey())
+						.collect(Collectors.joining(", "))
+				)
+				.define("where", check.format())
+				.bindMap(check.formatValues(this))
+		));
 
 		if(updated) return object;
 		else throw new ConflictException();
 	}
 
-	@Override
-	public boolean update(@NotNull T object) {
-		var sql = "update <name> set <update> <where>";
-		var identifier = Where.of(this, object);
-
-		if(unique.size() > keys.size()) sql += " and 0 not in (select 0 from <name> <where> and not (<unique>))";
-
-		final var fSql = sql + " returning *";
-
-		return manager.db.withHandle(handle -> {
-			var query = handle.createUpdate(fSql)
-					.define("name", name)
-					.define("update", columns.keySet().stream()
-							.filter(k -> !this.keys.containsKey(k))
-							.map(k -> '"' + k + "\" = :" + k)
-							.collect(Collectors.joining(", "))
-					)
-					.define("where", identifier.format())
-					.define("unique", unique.keySet().stream()
-							.filter(k -> !this.keys.containsKey(k))
-							.map(k -> '"' + k + "\" = :" + k)
-							.collect(Collectors.joining(", "))
-					)
-					.bindMap(identifier.formatValues(this));
-
-			return execute(object, query);
-		});
-	}
-
 	@NotNull
 	@Override
-	public T upsert(@NotNull T object) {
-		var sql = "insert into <name>(<columns>) values(<values>) ";
+	public T update(@NotNull T object) throws ConflictException {
+		var identifier = Where.identify(this, object);
+		var unique = Where.detectConflict(this, object, false);
 
-		if(!unique.isEmpty()) sql += " on conflict(<unique>) do update set <update>";
+		var sql = "update <name> set <update> <where>";
+		if(this.unique.size() > keys.size()) sql += " and not exists (select from <name> <unique>)";
+		final var fSql = sql + " returning *";
 
-		var fSql = sql; //Because java
+		var updated = manager.db.withHandle(handle -> execute(object, handle.createUpdate(fSql)
+				.define("name", name)
+				.define("update", columns.keySet().stream()
+						.filter(k -> !this.keys.containsKey(k))
+						.map(k -> '"' + k + "\" = :" + k)
+						.collect(Collectors.joining(", "))
+				)
+				.define("where", identifier.format())
+				.define("unique", unique.format())
+				.bindMap(identifier.formatValues(this))
+				.bindMap(unique.formatValues(this))
+		));
 
-		manager.db.useHandle(handle -> {
-			var query = handle.createUpdate(fSql)
-					.define("name", name)
-					.define("columns", columns.entrySet().stream()
-							.filter(e -> {
-								try {
-									return !(e.getValue().getAnnotation(Column.class).autoincrement() && ((Number) e.getValue().get(object)).longValue() <= 0);
-								} catch(IllegalAccessException ex) {
-									throw new RuntimeException(ex);
-								}
-							})
-							.map(e -> '"' + e.getKey() + '"')
-							.collect(Collectors.joining(", "))
-					)
-					.define("values", columns.entrySet().stream()
-							.filter(e -> {
-								try {
-									return !(e.getValue().getAnnotation(Column.class).autoincrement() && ((Number) e.getValue().get(object)).longValue() <= 0);
-								} catch(IllegalAccessException ex) {
-									throw new RuntimeException(ex);
-								}
-							})
-							.map(e -> ":" + e.getKey())
-							.collect(Collectors.joining(", "))
-					)
-					.define("unique", this.unique.keySet().stream()
-							.map(k -> '"' + k + '"')
-							.collect(Collectors.joining(", "))
-					)
-					.define("update", columns.keySet().stream()
-							.filter(k -> !this.keys.containsKey(k))
-							.map(k -> '"' + k + "\" = :" + k)
-							.collect(Collectors.joining(", "))
-					);
-
-			execute(object, query);
-		});
-
-		return object;
+		if(updated) return object;
+		else throw new ConflictException();
 	}
 
 	@Override

@@ -2,6 +2,7 @@ package de.mineking.javautils.database;
 
 import de.mineking.javautils.ID;
 import de.mineking.javautils.Pair;
+import org.jdbi.v3.core.argument.Argument;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -14,7 +15,7 @@ import java.util.stream.Collectors;
 
 public interface Where {
 	@NotNull
-	static <T> Where of(@NotNull Table<T> table, @NotNull T object) {
+	static <T> Where identify(@NotNull Table<T> table, @NotNull T object) {
 		if(table.getKeys().isEmpty()) throw new IllegalArgumentException("Cannot identify object without keys");
 		return allOf(table.getKeys().entrySet().stream()
 				.map(e -> {
@@ -26,6 +27,22 @@ public interface Where {
 				})
 				.toList()
 		);
+	}
+
+	@NotNull
+	static <T> Where detectConflict(@NotNull Table<T> table, @NotNull T object, boolean includeKeys) {
+		if(table.getUnique().isEmpty()) return empty();
+		return Where.anyOf(table.getUnique().entrySet().stream()
+				.filter(e -> !e.getValue().getAnnotation(Column.class).key() || includeKeys)
+				.map(e -> {
+					try {
+						return equals(e.getKey(), e.getValue().get(object));
+					} catch(IllegalAccessException ex) {
+						throw new RuntimeException(ex);
+					}
+				})
+				.toList()
+		).and(includeKeys ? empty() : not(identify(table, object)));
 	}
 
 	@NotNull
@@ -165,7 +182,7 @@ public interface Where {
 	Map<String, Pair<String, Object>> values();
 
 	@SuppressWarnings({"rawtypes", "unchecked"})
-	default Map<String, Object> formatValues(@NotNull Table<?> table) {
+	default Map<String, Argument> formatValues(@NotNull Table<?> table) {
 		return values().entrySet().stream()
 				.map(e -> {
 					Field f = table.getColumns().get(e.getValue().key());
