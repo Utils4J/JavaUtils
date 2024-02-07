@@ -1,0 +1,778 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="90dac63a-6ca0-45a1-9d86-c581770696cf" name="Changes" comment="Reformat code" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ExternalProjectsData">
+    <projectState path="$PROJECT_DIR$">
+      <ProjectState />
+    </projectState>
+  </component>
+  <component name="ExternalProjectsManager">
+    <system id="GRADLE">
+      <state>
+        <task path="$PROJECT_DIR$">
+          <activation />
+        </task>
+        <projects_view>
+          <tree_state>
+            <expand>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="JavaUtils" type="f1a62948:ProjectNode" />
+              </path>
+            </expand>
+            <select />
+          </tree_state>
+        </projects_view>
+      </state>
+    </system>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Interface" />
+        <option value="AnnotationType" />
+        <option value="Record" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="master" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 6
+}</component>
+  <component name="ProjectId" id="2ZUTxxKpDzkJoz5wLQcNZV1v3eY" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Gradle.ArrayTest.insert.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.ArrayTest.select.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.Build JavaUtils.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.CustomTableTest.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.CustomTableTest.select2.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.DatabaseTest.create.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.DatabaseTest.delete.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.DatabaseTest.deleteAll.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.DatabaseTest.insert.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.DatabaseTest.selectAll.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.DatabaseTest.selectMany.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.DatabaseTest.test.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.DatabaseTest.update.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.InsertTest.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.InsertTest.insert.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.JavaUtils [:GenericTest.main()].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.KeyTest.copy.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.KeyTest.create.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.KeyTest.insert.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.KeyTest.update.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.UpdateTest.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.DatabaseTest,create and 6 more.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;extract.method.default.visibility&quot;: &quot;private&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;update-fix&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/tobias/coding/java/Default/JavaUtils/src/test/resources&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;settings.editor.splitter.proportion&quot;: &quot;0.3027245&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  },
+  &quot;keyToStringList&quot;: {
+    &quot;DatabaseDriversLRU&quot;: [
+      &quot;mysql_aurora_aws&quot;,
+      &quot;postgresql&quot;
+    ]
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/test/resources" />
+      <recent name="$PROJECT_DIR$" />
+    </key>
+    <key name="MoveInnerDialog.RECENTS_KEY">
+      <recent name="" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Gradle.InsertTest">
+    <configuration name="DatabaseTest.create" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value=":test" />
+            <option value="--tests" />
+            <option value="&quot;DatabaseTest.create&quot;" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>true</RunAsTest>
+      <method v="2" />
+    </configuration>
+    <configuration name="InsertTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value=":test" />
+            <option value="--tests" />
+            <option value="&quot;database.InsertTest&quot;" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>true</RunAsTest>
+      <method v="2" />
+    </configuration>
+    <configuration name="InsertTest.insert" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value=":test" />
+            <option value="--tests" />
+            <option value="&quot;database.InsertTest.insert&quot;" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>true</RunAsTest>
+      <method v="2" />
+    </configuration>
+    <configuration name="KeyTest.update" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value=":test" />
+            <option value="--tests" />
+            <option value="&quot;KeyTest.update&quot;" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>true</RunAsTest>
+      <method v="2" />
+    </configuration>
+    <configuration name="UpdateTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value=":test" />
+            <option value="--tests" />
+            <option value="&quot;database.UpdateTest&quot;" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>true</RunAsTest>
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Gradle.InsertTest" />
+        <item itemvalue="Gradle.UpdateTest" />
+        <item itemvalue="Gradle.InsertTest.insert" />
+        <item itemvalue="Gradle.KeyTest.update" />
+        <item itemvalue="Gradle.DatabaseTest.create" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="jdk-17.0.9-corretto-17.0.9-3183f394aec4-86fc8109" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="90dac63a-6ca0-45a1-9d86-c581770696cf" name="Changes" comment="" />
+      <created>1702475910444</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1702475910444</updated>
+      <workItem from="1702475911526" duration="13674000" />
+      <workItem from="1702545163673" duration="3274000" />
+      <workItem from="1702550987491" duration="2706000" />
+      <workItem from="1702582993446" duration="1424000" />
+      <workItem from="1702587271052" duration="6656000" />
+      <workItem from="1702643383315" duration="18612000" />
+      <workItem from="1702754759242" duration="94000" />
+      <workItem from="1702756615366" duration="2092000" />
+      <workItem from="1702765329046" duration="724000" />
+      <workItem from="1702819590997" duration="54000" />
+      <workItem from="1702890610635" duration="1524000" />
+      <workItem from="1703008086714" duration="613000" />
+      <workItem from="1703023264520" duration="22810000" />
+      <workItem from="1703163629642" duration="12798000" />
+      <workItem from="1703186691030" duration="8440000" />
+      <workItem from="1703201449738" duration="1477000" />
+      <workItem from="1703268740398" duration="621000" />
+      <workItem from="1703589364040" duration="184000" />
+      <workItem from="1703630445619" duration="329000" />
+      <workItem from="1703867067625" duration="1307000" />
+      <workItem from="1703889907155" duration="19000" />
+      <workItem from="1703934837085" duration="2634000" />
+      <workItem from="1703947938586" duration="89000" />
+      <workItem from="1703976713645" duration="620000" />
+      <workItem from="1704015785478" duration="1207000" />
+      <workItem from="1704016999569" duration="368000" />
+      <workItem from="1704034570395" duration="552000" />
+      <workItem from="1704047662682" duration="662000" />
+      <workItem from="1704120674917" duration="558000" />
+      <workItem from="1704207412739" duration="3596000" />
+      <workItem from="1704228772362" duration="121000" />
+      <workItem from="1704404014400" duration="27509000" />
+      <workItem from="1704554898641" duration="2000" />
+      <workItem from="1704659471634" duration="3000" />
+      <workItem from="1705417533621" duration="1213000" />
+      <workItem from="1705748844913" duration="733000" />
+      <workItem from="1706176483547" duration="181000" />
+      <workItem from="1706249550694" duration="1644000" />
+      <workItem from="1706358445019" duration="812000" />
+      <workItem from="1706384910530" duration="6363000" />
+      <workItem from="1706430453122" duration="14321000" />
+      <workItem from="1706528806001" duration="599000" />
+      <workItem from="1706535932512" duration="7707000" />
+      <workItem from="1707131545723" duration="17382000" />
+      <workItem from="1707226918118" duration="6000" />
+    </task>
+    <task id="LOCAL-00029" summary="Try to fix json">
+      <option name="closed" value="true" />
+      <created>1703194239168</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1703194239168</updated>
+    </task>
+    <task id="LOCAL-00030" summary="Try to fix json">
+      <option name="closed" value="true" />
+      <created>1703194596901</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1703194596901</updated>
+    </task>
+    <task id="LOCAL-00031" summary="Try to fix json">
+      <option name="closed" value="true" />
+      <created>1703194934848</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1703194934848</updated>
+    </task>
+    <task id="LOCAL-00032" summary="Try to fix json">
+      <option name="closed" value="true" />
+      <created>1703195092699</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1703195092699</updated>
+    </task>
+    <task id="LOCAL-00033" summary="Try to fix json">
+      <option name="closed" value="true" />
+      <created>1703195657844</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1703195657844</updated>
+    </task>
+    <task id="LOCAL-00034" summary="Bump version 1.0.5">
+      <option name="closed" value="true" />
+      <created>1703200046660</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1703200046660</updated>
+    </task>
+    <task id="LOCAL-00035" summary="Fix TIMESTAMP mapper">
+      <option name="closed" value="true" />
+      <created>1703201628819</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1703201628819</updated>
+    </task>
+    <task id="LOCAL-00036" summary="Bump version 1.0.6">
+      <option name="closed" value="true" />
+      <created>1703202482565</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1703202482565</updated>
+    </task>
+    <task id="LOCAL-00037" summary="Try to fix column ordering">
+      <option name="closed" value="true" />
+      <created>1703630598664</created>
+      <option name="number" value="00037" />
+      <option name="presentableId" value="LOCAL-00037" />
+      <option name="project" value="LOCAL" />
+      <updated>1703630598664</updated>
+    </task>
+    <task id="LOCAL-00038" summary="Bump Version 1.0.7">
+      <option name="closed" value="true" />
+      <created>1703630712812</created>
+      <option name="number" value="00038" />
+      <option name="presentableId" value="LOCAL-00038" />
+      <option name="project" value="LOCAL" />
+      <updated>1703630712812</updated>
+    </task>
+    <task id="LOCAL-00039" summary="Set gson number strategy">
+      <option name="closed" value="true" />
+      <created>1703867174264</created>
+      <option name="number" value="00039" />
+      <option name="presentableId" value="LOCAL-00039" />
+      <option name="project" value="LOCAL" />
+      <updated>1703867174264</updated>
+    </task>
+    <task id="LOCAL-00040" summary="Fix autoincrement">
+      <option name="closed" value="true" />
+      <created>1703936845140</created>
+      <option name="number" value="00040" />
+      <option name="presentableId" value="LOCAL-00040" />
+      <option name="project" value="LOCAL" />
+      <updated>1703936845140</updated>
+    </task>
+    <task id="LOCAL-00041" summary="Bump version 1.0.8">
+      <option name="closed" value="true" />
+      <created>1703936867643</created>
+      <option name="number" value="00041" />
+      <option name="presentableId" value="LOCAL-00041" />
+      <option name="project" value="LOCAL" />
+      <updated>1703936867643</updated>
+    </task>
+    <task id="LOCAL-00042" summary="Fix TypeMapper.ARRAY">
+      <option name="closed" value="true" />
+      <created>1703948020363</created>
+      <option name="number" value="00042" />
+      <option name="presentableId" value="LOCAL-00042" />
+      <option name="project" value="LOCAL" />
+      <updated>1703948020363</updated>
+    </task>
+    <task id="LOCAL-00043" summary="Improve Where">
+      <option name="closed" value="true" />
+      <created>1704017110040</created>
+      <option name="number" value="00043" />
+      <option name="presentableId" value="LOCAL-00043" />
+      <option name="project" value="LOCAL" />
+      <updated>1704017110040</updated>
+    </task>
+    <task id="LOCAL-00044" summary="Bump version 1.1.0">
+      <option name="closed" value="true" />
+      <created>1704017307230</created>
+      <option name="number" value="00044" />
+      <option name="presentableId" value="LOCAL-00044" />
+      <option name="project" value="LOCAL" />
+      <updated>1704017307230</updated>
+    </task>
+    <task id="LOCAL-00045" summary="Add toString method in TypeMapper arguments">
+      <option name="closed" value="true" />
+      <created>1704046516469</created>
+      <option name="number" value="00045" />
+      <option name="presentableId" value="LOCAL-00045" />
+      <option name="project" value="LOCAL" />
+      <updated>1704046516469</updated>
+    </task>
+    <task id="LOCAL-00046" summary="Add support for null ids">
+      <option name="closed" value="true" />
+      <created>1704047709585</created>
+      <option name="number" value="00046" />
+      <option name="presentableId" value="LOCAL-00046" />
+      <option name="project" value="LOCAL" />
+      <updated>1704047709585</updated>
+    </task>
+    <task id="LOCAL-00047" summary="Fix deletion">
+      <option name="closed" value="true" />
+      <created>1704208063292</created>
+      <option name="number" value="00047" />
+      <option name="presentableId" value="LOCAL-00047" />
+      <option name="project" value="LOCAL" />
+      <updated>1704208063292</updated>
+    </task>
+    <task id="LOCAL-00048" summary="Improve Where">
+      <option name="closed" value="true" />
+      <created>1704209426606</created>
+      <option name="number" value="00048" />
+      <option name="presentableId" value="LOCAL-00048" />
+      <option name="project" value="LOCAL" />
+      <updated>1704209426606</updated>
+    </task>
+    <task id="LOCAL-00049" summary="Try to fix array type mapper">
+      <option name="closed" value="true" />
+      <created>1704211025911</created>
+      <option name="number" value="00049" />
+      <option name="presentableId" value="LOCAL-00049" />
+      <option name="project" value="LOCAL" />
+      <updated>1704211025911</updated>
+    </task>
+    <task id="LOCAL-00050" summary="Fix formatting">
+      <option name="closed" value="true" />
+      <created>1704228872757</created>
+      <option name="number" value="00050" />
+      <option name="presentableId" value="LOCAL-00050" />
+      <option name="project" value="LOCAL" />
+      <updated>1704228872757</updated>
+    </task>
+    <task id="LOCAL-00051" summary="Bump version 1.2.0">
+      <option name="closed" value="true" />
+      <created>1704228889186</created>
+      <option name="number" value="00051" />
+      <option name="presentableId" value="LOCAL-00051" />
+      <option name="project" value="LOCAL" />
+      <updated>1704228889186</updated>
+    </task>
+    <task id="LOCAL-00052" summary="Improve where and reflection handling">
+      <option name="closed" value="true" />
+      <created>1704472727070</created>
+      <option name="number" value="00052" />
+      <option name="presentableId" value="LOCAL-00052" />
+      <option name="project" value="LOCAL" />
+      <updated>1704472727070</updated>
+    </task>
+    <task id="LOCAL-00053" summary="Reformat code">
+      <option name="closed" value="true" />
+      <created>1704472752466</created>
+      <option name="number" value="00053" />
+      <option name="presentableId" value="LOCAL-00053" />
+      <option name="project" value="LOCAL" />
+      <updated>1704472752466</updated>
+    </task>
+    <task id="LOCAL-00054" summary="Fix Where">
+      <option name="closed" value="true" />
+      <created>1704481942196</created>
+      <option name="number" value="00054" />
+      <option name="presentableId" value="LOCAL-00054" />
+      <option name="project" value="LOCAL" />
+      <updated>1704481942196</updated>
+    </task>
+    <task id="LOCAL-00055" summary="Make Where parameters nullable">
+      <option name="closed" value="true" />
+      <created>1704536007892</created>
+      <option name="number" value="00055" />
+      <option name="presentableId" value="LOCAL-00055" />
+      <option name="project" value="LOCAL" />
+      <updated>1704536007893</updated>
+    </task>
+    <task id="LOCAL-00056" summary="Fix TypeMapper.INTEGER">
+      <option name="closed" value="true" />
+      <created>1704538260296</created>
+      <option name="number" value="00056" />
+      <option name="presentableId" value="LOCAL-00056" />
+      <option name="project" value="LOCAL" />
+      <updated>1704538260296</updated>
+    </task>
+    <task id="LOCAL-00057" summary="Fix Where">
+      <option name="closed" value="true" />
+      <created>1704542202207</created>
+      <option name="number" value="00057" />
+      <option name="presentableId" value="LOCAL-00057" />
+      <option name="project" value="LOCAL" />
+      <updated>1704542202207</updated>
+    </task>
+    <task id="LOCAL-00058" summary="Fix Where">
+      <option name="closed" value="true" />
+      <created>1704543370336</created>
+      <option name="number" value="00058" />
+      <option name="presentableId" value="LOCAL-00058" />
+      <option name="project" value="LOCAL" />
+      <updated>1704543370336</updated>
+    </task>
+    <task id="LOCAL-00059" summary="Reformat code">
+      <option name="closed" value="true" />
+      <created>1705749061131</created>
+      <option name="number" value="00059" />
+      <option name="presentableId" value="LOCAL-00059" />
+      <option name="project" value="LOCAL" />
+      <updated>1705749061132</updated>
+    </task>
+    <task id="LOCAL-00060" summary="Add TypeMapper#UUID">
+      <option name="closed" value="true" />
+      <created>1706252766706</created>
+      <option name="number" value="00060" />
+      <option name="presentableId" value="LOCAL-00060" />
+      <option name="project" value="LOCAL" />
+      <updated>1706252766706</updated>
+    </task>
+    <task id="LOCAL-00061" summary="Make delete return int (number of deleted rows)">
+      <option name="closed" value="true" />
+      <created>1706358531334</created>
+      <option name="number" value="00061" />
+      <option name="presentableId" value="LOCAL-00061" />
+      <option name="project" value="LOCAL" />
+      <updated>1706358531335</updated>
+    </task>
+    <task id="LOCAL-00062" summary="Update GH Actions">
+      <option name="closed" value="true" />
+      <created>1706363196792</created>
+      <option name="number" value="00062" />
+      <option name="presentableId" value="LOCAL-00062" />
+      <option name="project" value="LOCAL" />
+      <updated>1706363196792</updated>
+    </task>
+    <task id="LOCAL-00063" summary="Add TypeMapper#BLOB">
+      <option name="closed" value="true" />
+      <created>1706385073960</created>
+      <option name="number" value="00063" />
+      <option name="presentableId" value="LOCAL-00063" />
+      <option name="project" value="LOCAL" />
+      <updated>1706385073961</updated>
+    </task>
+    <task id="LOCAL-00064" summary="Fix check.yml">
+      <option name="closed" value="true" />
+      <created>1706385173245</created>
+      <option name="number" value="00064" />
+      <option name="presentableId" value="LOCAL-00064" />
+      <option name="project" value="LOCAL" />
+      <updated>1706385173245</updated>
+    </task>
+    <task id="LOCAL-00065" summary="Try to fix TypeMapper#UUID">
+      <option name="closed" value="true" />
+      <created>1706386446678</created>
+      <option name="number" value="00065" />
+      <option name="presentableId" value="LOCAL-00065" />
+      <option name="project" value="LOCAL" />
+      <updated>1706386446678</updated>
+    </task>
+    <task id="LOCAL-00066" summary="Add Column#modifier">
+      <option name="closed" value="true" />
+      <created>1706424670848</created>
+      <option name="number" value="00066" />
+      <option name="presentableId" value="LOCAL-00066" />
+      <option name="project" value="LOCAL" />
+      <updated>1706424670848</updated>
+    </task>
+    <task id="LOCAL-00067" summary="Split Table#insert into insert, insertOrUpdate and update">
+      <option name="closed" value="true" />
+      <created>1706454454274</created>
+      <option name="number" value="00067" />
+      <option name="presentableId" value="LOCAL-00067" />
+      <option name="project" value="LOCAL" />
+      <updated>1706454454274</updated>
+    </task>
+    <task id="LOCAL-00068" summary="Create proper unit test">
+      <option name="closed" value="true" />
+      <created>1706457020955</created>
+      <option name="number" value="00068" />
+      <option name="presentableId" value="LOCAL-00068" />
+      <option name="project" value="LOCAL" />
+      <updated>1706457020955</updated>
+    </task>
+    <task id="LOCAL-00069" summary="Make gradle run unit tests">
+      <option name="closed" value="true" />
+      <created>1706457189497</created>
+      <option name="number" value="00069" />
+      <option name="presentableId" value="LOCAL-00069" />
+      <option name="project" value="LOCAL" />
+      <updated>1706457189497</updated>
+    </task>
+    <task id="LOCAL-00070" summary="Rename insertOrUpdate to upsert">
+      <option name="closed" value="true" />
+      <created>1706462740522</created>
+      <option name="number" value="00070" />
+      <option name="presentableId" value="LOCAL-00070" />
+      <option name="project" value="LOCAL" />
+      <updated>1706462740522</updated>
+    </task>
+    <task id="LOCAL-00071" summary="Improve TryCatch">
+      <option name="closed" value="true" />
+      <created>1706474091475</created>
+      <option name="number" value="00071" />
+      <option name="presentableId" value="LOCAL-00071" />
+      <option name="project" value="LOCAL" />
+      <updated>1706474091475</updated>
+    </task>
+    <task id="LOCAL-00072" summary="Bump version 1.5.0">
+      <option name="closed" value="true" />
+      <created>1706475584381</created>
+      <option name="number" value="00072" />
+      <option name="presentableId" value="LOCAL-00072" />
+      <option name="project" value="LOCAL" />
+      <updated>1706475584381</updated>
+    </task>
+    <task id="LOCAL-00073" summary="Add Column#unique">
+      <option name="closed" value="true" />
+      <created>1706542029354</created>
+      <option name="number" value="00073" />
+      <option name="presentableId" value="LOCAL-00073" />
+      <option name="project" value="LOCAL" />
+      <updated>1706542029355</updated>
+    </task>
+    <task id="LOCAL-00074" summary="Fix TableImpl#update">
+      <option name="closed" value="true" />
+      <created>1706542324581</created>
+      <option name="number" value="00074" />
+      <option name="presentableId" value="LOCAL-00074" />
+      <option name="project" value="LOCAL" />
+      <updated>1706542324581</updated>
+    </task>
+    <task id="LOCAL-00075" summary="Fix TableImpl#update">
+      <option name="closed" value="true" />
+      <created>1706548489737</created>
+      <option name="number" value="00075" />
+      <option name="presentableId" value="LOCAL-00075" />
+      <option name="project" value="LOCAL" />
+      <updated>1706548489737</updated>
+    </task>
+    <task id="LOCAL-00076" summary="Fix and improve Table#insert Table#update and Table#upsert">
+      <option name="closed" value="true" />
+      <created>1707225938923</created>
+      <option name="number" value="00076" />
+      <option name="presentableId" value="LOCAL-00076" />
+      <option name="project" value="LOCAL" />
+      <updated>1707225938923</updated>
+    </task>
+    <task id="LOCAL-00077" summary="Reformat code">
+      <option name="closed" value="true" />
+      <created>1707225946164</created>
+      <option name="number" value="00077" />
+      <option name="presentableId" value="LOCAL-00077" />
+      <option name="project" value="LOCAL" />
+      <updated>1707225946164</updated>
+    </task>
+    <option name="localTasksCounter" value="78" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="master" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Improve Where" />
+    <MESSAGE value="Try to fix array type mapper" />
+    <MESSAGE value="Fix formatting" />
+    <MESSAGE value="Bump version 1.2.0" />
+    <MESSAGE value="Improve where and reflection handling" />
+    <MESSAGE value="Make Where parameters nullable" />
+    <MESSAGE value="Fix TypeMapper.INTEGER" />
+    <MESSAGE value="Fix Where" />
+    <MESSAGE value="Add TypeMapper#UUID" />
+    <MESSAGE value="Make delete return int (number of deleted rows)" />
+    <MESSAGE value="Update GH Actions" />
+    <MESSAGE value="Add TypeMapper#BLOB" />
+    <MESSAGE value="Fix check.yml" />
+    <MESSAGE value="Try to fix TypeMapper#UUID" />
+    <MESSAGE value="Add Column#modifier" />
+    <MESSAGE value="Split Table#insert into insert, insertOrUpdate and update" />
+    <MESSAGE value="Create proper unit test" />
+    <MESSAGE value="Make gradle run unit tests" />
+    <MESSAGE value="Rename insertOrUpdate to upsert" />
+    <MESSAGE value="Improve TryCatch" />
+    <MESSAGE value="Bump version 1.5.0" />
+    <MESSAGE value="Add Column#unique" />
+    <MESSAGE value="Fix TableImpl#update" />
+    <MESSAGE value="Fix and improve Table#insert Table#update and Table#upsert" />
+    <MESSAGE value="Reformat code" />
+    <option name="LAST_COMMIT_MESSAGE" value="Reformat code" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <breakpoint enabled="true" type="java-exception">
+          <properties class="de.mineking.javautils.database.exception.ConflictException" package="de.mineking.javautils.database.exception" />
+          <option name="timeStamp" value="1" />
+        </breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+</project>

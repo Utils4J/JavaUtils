@@ -99,7 +99,7 @@ public class DatabaseManager {
 		public TableBuilder(Class<T> table, Class<O> type, Supplier<O> instance, String name) {
 			this.table = (T) Proxy.newProxyInstance(
 					getClass().getClassLoader(),
-					new Class<?>[]{table},
+					new Class<?>[] {table},
 					new TableImpl<>(DatabaseManager.this, this::getTable, type, instance, name)
 			);
 		}
