@@ -13,14 +13,15 @@ public interface DataClass<T extends DataClass<T>> {
 		return getTable().insert((T) this);
 	}
 
+	@NotNull
 	@SuppressWarnings("unchecked")
-	default boolean update() {
+	default T update() throws ConflictException {
 		return getTable().update((T) this);
 	}
 
 	@NotNull
 	@SuppressWarnings("unchecked")
-	default T upsert() {
+	default T upsert() throws ConflictException {
 		return getTable().upsert((T) this);
 	}
 

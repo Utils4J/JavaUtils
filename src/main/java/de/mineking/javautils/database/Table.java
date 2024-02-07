@@ -23,6 +23,9 @@ public interface Table<T> {
 	Map<String, Field> getColumns();
 
 	@NotNull
+	Map<String, Field> getUnique();
+
+	@NotNull
 	Map<String, Field> getKeys();
 
 
@@ -49,15 +52,22 @@ public interface Table<T> {
 	@NotNull
 	T insert(@NotNull T object) throws ConflictException;
 
-	boolean update(@NotNull T object);
+	@NotNull
+	T update(@NotNull T object) throws ConflictException;
 
 	@NotNull
-	T upsert(@NotNull T object);
+	default T upsert(@NotNull T object) throws ConflictException {
+		try {
+			return insert(object);
+		} catch(ConflictException e) {
+			return update(object);
+		}
+	}
 
 	int delete(@NotNull Where where);
 
 	default int delete(@NotNull T object) {
-		return delete(Where.of(this, object));
+		return delete(Where.identify(this, object));
 	}
 
 	default int deleteAll() {
