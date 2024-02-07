@@ -17,13 +17,13 @@ public final class TryCatch {
 
 	public static <E extends Throwable> void tryAndThrow(@NotNull ThrowingRunnable<E> tryMethod) {
 		tryAndHandle(tryMethod, e -> {
-			if (e instanceof RuntimeException re) throw re;
+			if(e instanceof RuntimeException re) throw re;
 			throw new RuntimeException(e);
 		});
 	}
 
 	public static <E extends Throwable> void tryAndIgnore(@NotNull ThrowingRunnable<E> tryMethod) {
-		tryAndHandle(tryMethod, e -> {});
+		tryAndHandle(tryMethod, e -> { });
 	}
 
 	public static <E extends Throwable> void tryAndPrint(@NotNull ThrowingRunnable<E> tryMethod) {
@@ -49,13 +49,13 @@ public final class TryCatch {
 
 	public static <E extends Throwable, T> void tryAndThrow(@NotNull ThrowingConsumer<E, T> tryMethod, T arg) {
 		tryAndHandle(tryMethod, arg, e -> {
-			if (e instanceof RuntimeException re) throw re;
+			if(e instanceof RuntimeException re) throw re;
 			throw new RuntimeException(e);
 		});
 	}
 
 	public static <E extends Throwable, T> void tryAndIgnore(@NotNull ThrowingConsumer<E, T> tryMethod, T arg) {
-		tryAndHandle(tryMethod, arg, e -> {});
+		tryAndHandle(tryMethod, arg, e -> { });
 	}
 
 	public static <E extends Throwable, T> void tryAndPrint(@NotNull ThrowingConsumer<E, T> tryMethod, T arg) {
@@ -82,13 +82,13 @@ public final class TryCatch {
 
 	public static <E extends Throwable, T, R> Optional<R> tryAndThrow(@NotNull ThrowingFunction<E, T, R> tryMethod, T arg) {
 		return tryAndHandle(tryMethod, arg, e -> {
-			if (e instanceof RuntimeException re) throw re;
+			if(e instanceof RuntimeException re) throw re;
 			throw new RuntimeException(e);
 		});
 	}
 
 	public static <E extends Throwable, T, R> Optional<R> tryAndIgnore(@NotNull ThrowingFunction<E, T, R> tryMethod, T arg) {
-		return tryAndHandle(tryMethod, arg, e -> {});
+		return tryAndHandle(tryMethod, arg, e -> { });
 	}
 
 	public static <E extends Throwable, T, R> Optional<R> tryAndPrint(@NotNull ThrowingFunction<E, T, R> tryMethod, T arg) {
@@ -116,13 +116,13 @@ public final class TryCatch {
 
 	public static <E extends Throwable, T> Optional<T> tryAndThrow(@NotNull ThrowingSupplier<E, T> tryMethod) {
 		return tryAndHandle(tryMethod, e -> {
-			if (e instanceof RuntimeException re) throw re;
+			if(e instanceof RuntimeException re) throw re;
 			throw new RuntimeException(e);
 		});
 	}
 
 	public static <E extends Throwable, T> Optional<T> tryAndIgnore(@NotNull ThrowingSupplier<E, T> tryMethod) {
-		return tryAndHandle(tryMethod, e -> {});
+		return tryAndHandle(tryMethod, e -> { });
 	}
 
 	public static <E extends Throwable, T> Optional<T> tryAndPrint(@NotNull ThrowingSupplier<E, T> tryMethod) {
