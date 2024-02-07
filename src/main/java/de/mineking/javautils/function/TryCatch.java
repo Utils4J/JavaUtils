@@ -6,7 +6,7 @@ import org.slf4j.Logger;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-public class TryCatch {
+public final class TryCatch {
 	private TryCatch() {
 	}
 
