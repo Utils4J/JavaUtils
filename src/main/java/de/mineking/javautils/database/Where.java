@@ -30,10 +30,10 @@ public interface Where {
 	}
 
 	@NotNull
-	static <T> Where detectConflict(@NotNull Table<T> table, @NotNull T object, boolean includeKeys) {
+	static <T> Where detectConflict(@NotNull Table<T> table, @NotNull T object, boolean isInsert) {
 		if(table.getUnique().isEmpty()) return empty();
-		return Where.anyOf(table.getUnique().entrySet().stream()
-				.filter(e -> !e.getValue().getAnnotation(Column.class).key() || includeKeys)
+		var temp = Where.anyOf(table.getUnique().entrySet().stream()
+				.filter(e -> !e.getValue().getAnnotation(Column.class).key())
 				.map(e -> {
 					try {
 						return equals(e.getKey(), e.getValue().get(object));
@@ -42,7 +42,11 @@ public interface Where {
 					}
 				})
 				.toList()
-		).and(includeKeys ? empty() : not(identify(table, object)));
+		);
+
+		return isInsert
+				? temp.or(identify(table, object))
+				: temp.and(not(identify(table, object)));
 	}
 
 	@NotNull
@@ -267,6 +271,11 @@ public interface Where {
 		@Override
 		public String get() {
 			return str;
+		}
+
+		@Override
+		public String toString() {
+			return get();
 		}
 	}
 }
