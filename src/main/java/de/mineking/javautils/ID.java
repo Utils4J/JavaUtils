@@ -7,6 +7,7 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.Arrays;
 
 public class ID {
 	private final static Base62 base62 = Base62.createInstance();
@@ -82,6 +83,11 @@ public class ID {
 
 	public Instant getTimeCreated() {
 		return Instant.ofEpochMilli(bytes().getLong());
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		return obj instanceof ID i && Arrays.equals(data, i.data);
 	}
 
 	@Override
