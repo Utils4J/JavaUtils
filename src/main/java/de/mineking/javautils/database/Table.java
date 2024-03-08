@@ -55,6 +55,8 @@ public interface Table<T> {
 	@NotNull
 	T update(@NotNull T object) throws ConflictException;
 
+	void updateField(@NotNull Where where, @NotNull String name, @NotNull Object value);
+
 	@NotNull
 	default T upsert(@NotNull T object) throws ConflictException {
 		try {
