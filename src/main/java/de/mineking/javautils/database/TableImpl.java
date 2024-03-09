@@ -242,6 +242,21 @@ public class TableImpl<T> implements InvocationHandler, Table<T> {
 	}
 
 	@Override
+	public void updateField(@NotNull Where where, @NotNull String name, @NotNull Object value) {
+		var field = columns.get(name);
+		if(field == null) throw new IllegalArgumentException("Column '" + name + "' not found");
+
+		manager.db.useHandle(handle -> handle.createUpdate("update <table> set <name> = :value <where>")
+				.define("table", this.name)
+				.define("name", name)
+				.define("where", where.format())
+				.bind("value", manager.getArgument(field.getGenericType(), field, value))
+				.bindMap(where.formatValues(this))
+				.execute()
+		);
+	}
+
+	@Override
 	public boolean equals(Object obj) {
 		return obj instanceof Table<?> t && t.getName().equals(name);
 	}
