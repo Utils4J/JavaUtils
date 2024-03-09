@@ -25,10 +25,8 @@ public interface DataClass<T extends DataClass<T>> {
 		return getTable().upsert((T) this);
 	}
 
-	@NotNull
 	@SuppressWarnings("unchecked")
-	default DataClass<T> delete() {
-		getTable().delete((T) this);
-		return this;
+	default boolean delete() {
+		return getTable().delete((T) this) > 0;
 	}
 }
