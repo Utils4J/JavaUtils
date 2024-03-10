@@ -7,10 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public interface Where {
@@ -163,8 +160,27 @@ public interface Where {
 	}
 
 	@NotNull
+	static Where in(@NotNull String name, @NotNull Iterable<Object> values) {
+		var temp = new ArrayList<>();
+		values.forEach(temp::add);
+
+		if(temp.isEmpty()) return FALSE();
+		return WhereImpl.create(name, temp, "in");
+	}
+
+	@NotNull
 	static Where not(@NotNull Where where) {
 		return where.not();
+	}
+
+	@NotNull
+	static Where TRUE() {
+		return Where.unsafe("TRUE");
+	}
+
+	@NotNull
+	static Where FALSE() {
+		return Where.unsafe("FALSE");
 	}
 
 	@NotNull
@@ -247,8 +263,17 @@ public interface Where {
 		}
 
 		public static Where create(String name, Object value, String operator) {
-			String id = ID.generate().asString();
+			var id = ID.generate().asString();
 			return new WhereImpl("\"" + name + "\" " + operator + " :" + id, Map.of(id, new Pair<>(name, value)));
+		}
+
+		public static Where create(String name, List<Object> values, String operator) {
+			var ids = values.stream()
+					.map(v -> new Pair<>(ID.generate().asString(), v))
+					.toList();
+			return new WhereImpl("\"" + name + "\" " + operator + " (" + ids.stream().map(p -> ":" + p.key()).collect(Collectors.joining(", ")) + ")",
+					ids.stream().collect(Collectors.toMap(Pair::key, p -> new Pair<>(name, p.value())))
+			);
 		}
 
 		public static Where combined(Where a, Where b, String operator) {

@@ -9,6 +9,7 @@ import lombok.ToString;
 import org.jdbi.v3.core.statement.SqlLogger;
 import org.jdbi.v3.core.statement.StatementContext;
 import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -50,11 +51,13 @@ public class UpdateTest {
 		});
 	}
 
+	@BeforeEach
+	public void reset() {
+		table.deleteAll();
+	}
+
 	@Test
 	public void update() {
-		//Reset table for clean test
-		table.deleteAll();
-
 		var test = new TestClass();
 		test.insert();
 
@@ -67,9 +70,6 @@ public class UpdateTest {
 
 	@Test
 	public void updateConflict() {
-		//Reset table for clean test
-		table.deleteAll();
-
 		var test1 = new TestClass();
 		test1.insert();
 
@@ -99,9 +99,6 @@ public class UpdateTest {
 
 	@Test
 	public void upsert() {
-		//Reset table for clean test
-		table.deleteAll();
-
 		var test = new TestClass();
 		test.upsert();
 

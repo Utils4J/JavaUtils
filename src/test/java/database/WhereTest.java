@@ -2,20 +2,19 @@ package database;
 
 import de.mineking.javautils.ID;
 import de.mineking.javautils.database.*;
-import de.mineking.javautils.database.exception.ConflictException;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.jdbi.v3.core.statement.SqlLogger;
 import org.jdbi.v3.core.statement.StatementContext;
 import org.jetbrains.annotations.NotNull;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.util.List;
 
-public class InsertTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+public class WhereTest {
 	private final DatabaseManager manager;
 	private final Table<TestClass> table;
 
@@ -36,9 +35,9 @@ public class InsertTest {
 		}
 	}
 
-	public InsertTest() {
+	public WhereTest() {
 		manager = new DatabaseManager("jdbc:postgresql://localhost:5433/postgres", "postgres", "postgres");
-		table = manager.getTable(TestClass.class, TestClass::new, "insert").createTable();
+		table = manager.getTable(TestClass.class, TestClass::new, "whereTest").createTable();
 
 		manager.getDriver().setSqlLogger(new SqlLogger() {
 			@Override
@@ -47,26 +46,24 @@ public class InsertTest {
 				System.out.println(context.getBinding());
 			}
 		});
-	}
 
-	@BeforeEach
-	public void reset() {
 		table.deleteAll();
+
+		table.insert(new TestClass(null, "a"));
+		table.insert(new TestClass(null, "a"));
+		table.insert(new TestClass(null, "b"));
+		table.insert(new TestClass(null, "b"));
+		table.insert(new TestClass(null, "c"));
+		table.insert(new TestClass(null, "d"));
+		table.insert(new TestClass(null, "e"));
 	}
 
 	@Test
-	public void insert() {
-		var test = new TestClass();
-
-		assertTrue(table.selectOne(Where.equals("id", test.id)).isEmpty());
-
-		table.insert(test);
-		assertThrows(ConflictException.class, () -> table.insert(test));
-
-		assertTrue(table.selectOne(Where.equals("id", test.id)).isPresent());
-
-		test.id = null;
-		test.insert();
-		assertThrows(ConflictException.class, test::insert);
+	public void in() {
+		assertEquals(0, table.selectMany(Where.in("test", List.of())).size());
+		assertEquals(2, table.selectMany(Where.in("test", List.of("a"))).size());
+		assertEquals(2, table.selectMany(Where.in("test", List.of("b"))).size());
+		assertEquals(4, table.selectMany(Where.in("test", List.of("a", "b"))).size());
+		assertEquals(5, table.selectMany(Where.in("test", List.of("a", "b", "c"))).size());
 	}
 }
