@@ -8,6 +8,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 public interface Where {
@@ -165,7 +166,22 @@ public interface Where {
 		values.forEach(temp::add);
 
 		if(temp.isEmpty()) return FALSE();
-		return WhereImpl.create(name, temp, "in");
+		return WhereImpl.create(name, temp, "in", Collectors.joining(", ", "(", ")"));
+	}
+
+	@NotNull
+	static Where between(@NotNull String name, @NotNull Object lower, @NotNull Object upper) {
+		return WhereImpl.create(name, List.of(lower, upper), "between", Collectors.joining(" and "));
+	}
+
+	@NotNull
+	static Where isNull(@NotNull String name) {
+		return Where.unsafe(name + " is null");
+	}
+
+	@NotNull
+	static Where isNotNull(@NotNull String name) {
+		return Where.unsafe(name + " is not null");
 	}
 
 	@NotNull
@@ -267,11 +283,11 @@ public interface Where {
 			return new WhereImpl("\"" + name + "\" " + operator + " :" + id, Map.of(id, new Pair<>(name, value)));
 		}
 
-		public static Where create(String name, List<Object> values, String operator) {
+		public static Where create(String name, List<Object> values, String operator, Collector<CharSequence, ?, String> collector) {
 			var ids = values.stream()
 					.map(v -> new Pair<>(ID.generate().asString(), v))
 					.toList();
-			return new WhereImpl("\"" + name + "\" " + operator + " (" + ids.stream().map(p -> ":" + p.key()).collect(Collectors.joining(", ")) + ")",
+			return new WhereImpl("\"" + name + "\" " + operator + " " + ids.stream().map(p -> ":" + p.key()).collect(collector),
 					ids.stream().collect(Collectors.toMap(Pair::key, p -> new Pair<>(name, p.value())))
 			);
 		}

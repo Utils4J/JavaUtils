@@ -66,4 +66,9 @@ public class WhereTest {
 		assertEquals(4, table.selectMany(Where.in("test", List.of("a", "b"))).size());
 		assertEquals(5, table.selectMany(Where.in("test", List.of("a", "b", "c"))).size());
 	}
+
+	@Test
+	public void between() {
+		assertEquals(5, table.selectMany(Where.between("test", "a", "c")).size());
+	}
 }
