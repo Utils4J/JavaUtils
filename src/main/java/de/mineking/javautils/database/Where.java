@@ -7,10 +7,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 public interface Where {
@@ -163,8 +161,42 @@ public interface Where {
 	}
 
 	@NotNull
+	static Where in(@NotNull String name, @NotNull Iterable<Object> values) {
+		var temp = new ArrayList<>();
+		values.forEach(temp::add);
+
+		if(temp.isEmpty()) return FALSE();
+		return WhereImpl.create(name, temp, "in", Collectors.joining(", ", "(", ")"));
+	}
+
+	@NotNull
+	static Where between(@NotNull String name, @NotNull Object lower, @NotNull Object upper) {
+		return WhereImpl.create(name, List.of(lower, upper), "between", Collectors.joining(" and "));
+	}
+
+	@NotNull
+	static Where isNull(@NotNull String name) {
+		return Where.unsafe(name + " is null");
+	}
+
+	@NotNull
+	static Where isNotNull(@NotNull String name) {
+		return Where.unsafe(name + " is not null");
+	}
+
+	@NotNull
 	static Where not(@NotNull Where where) {
 		return where.not();
+	}
+
+	@NotNull
+	static Where TRUE() {
+		return Where.unsafe("TRUE");
+	}
+
+	@NotNull
+	static Where FALSE() {
+		return Where.unsafe("FALSE");
 	}
 
 	@NotNull
@@ -247,8 +279,17 @@ public interface Where {
 		}
 
 		public static Where create(String name, Object value, String operator) {
-			String id = ID.generate().asString();
+			var id = ID.generate().asString();
 			return new WhereImpl("\"" + name + "\" " + operator + " :" + id, Map.of(id, new Pair<>(name, value)));
+		}
+
+		public static Where create(String name, List<Object> values, String operator, Collector<CharSequence, ?, String> collector) {
+			var ids = values.stream()
+					.map(v -> new Pair<>(ID.generate().asString(), v))
+					.toList();
+			return new WhereImpl("\"" + name + "\" " + operator + " " + ids.stream().map(p -> ":" + p.key()).collect(collector),
+					ids.stream().collect(Collectors.toMap(Pair::key, p -> new Pair<>(name, p.value())))
+			);
 		}
 
 		public static Where combined(Where a, Where b, String operator) {
