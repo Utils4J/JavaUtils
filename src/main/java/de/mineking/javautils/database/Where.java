@@ -161,7 +161,7 @@ public interface Where {
 	}
 
 	@NotNull
-	static Where in(@NotNull String name, @NotNull Iterable<Object> values) {
+	static Where in(@NotNull String name, @NotNull Iterable<?> values) {
 		var temp = new ArrayList<>();
 		values.forEach(temp::add);
 
