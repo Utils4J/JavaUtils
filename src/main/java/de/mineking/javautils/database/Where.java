@@ -170,6 +170,12 @@ public interface Where {
 	}
 
 	@NotNull
+	static Where contains(@NotNull String name, @Nullable Object value) {
+		var id = ID.generate().asString();
+		return new WhereImpl(":" + id + " = any(\"" + name + "\")", Map.of(id, new Pair<>(name, value)));
+	}
+
+	@NotNull
 	static Where between(@NotNull String name, @NotNull Object lower, @NotNull Object upper) {
 		return WhereImpl.create(name, List.of(lower, upper), "between", Collectors.joining(" and "));
 	}
