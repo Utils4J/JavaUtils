@@ -2,11 +2,11 @@ package de.mineking.javautils.database;
 
 import de.mineking.javautils.ID;
 import de.mineking.javautils.Pair;
+import de.mineking.javautils.reflection.ReflectionUtils;
 import org.jdbi.v3.core.argument.Argument;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -52,7 +52,7 @@ public interface Where {
 		return new Where() {
 			@NotNull
 			@Override
-			public Map<String, Pair<String, Object>> values() {
+			public Map<String, ArgumentFactory> values() {
 				return Collections.emptyMap();
 			}
 
@@ -172,7 +172,23 @@ public interface Where {
 	@NotNull
 	static Where contains(@NotNull String name, @Nullable Object value) {
 		var id = ID.generate().asString();
-		return new WhereImpl(":" + id + " = any(\"" + name + "\")", Map.of(id, new Pair<>(name, value)));
+		return new WhereImpl(":" + id + " = any(\"" + name + "\")", Map.of(id, ArgumentFactory.create(name, value, table -> {
+			var f = table.getColumns().get(name);
+			if(f == null) throw new IllegalStateException("Table has no column with name '" + name + "'");
+
+			var type = ReflectionUtils.getActualArrayComponent(f.getGenericType());
+			var mapper = table.getManager().getMapper(type, f);
+
+			Object v;
+
+			try {
+				v = mapper.format(table.getManager(), type, f, value);
+			} catch(IllegalArgumentException | ClassCastException ex) {
+				v = value;
+			}
+
+			return mapper.createArgument(table.getManager(), type, f, v);
+		})));
 	}
 
 	@NotNull
@@ -221,28 +237,10 @@ public interface Where {
 	}
 
 	@NotNull
-	Map<String, Pair<String, Object>> values();
+	Map<String, ArgumentFactory> values();
 
-	@SuppressWarnings({"rawtypes", "unchecked"})
 	default Map<String, Argument> formatValues(@NotNull Table<?> table) {
-		return values().entrySet().stream()
-				.map(e -> {
-					Field f = table.getColumns().get(e.getValue().key());
-					if(f == null) throw new IllegalStateException("Table has no column with name '" + e.getValue().key() + "'");
-
-					TypeMapper mapper = table.getManager().getMapper(f.getType(), f);
-
-					Object value;
-
-					try {
-						value = mapper.format(table.getManager(), f.getType(), f, e.getValue().value());
-					} catch(IllegalArgumentException | ClassCastException ex) {
-						value = e.getValue().value();
-					}
-
-					return Map.entry(e.getKey(), mapper.createArgument(table.getManager(), f.getType(), f, value));
-				})
-				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+		return values().entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().create(table)));
 	}
 
 	@NotNull
@@ -258,7 +256,7 @@ public interface Where {
 		return new Where() {
 			@NotNull
 			@Override
-			public Map<String, Pair<String, Object>> values() {
+			public Map<String, ArgumentFactory> values() {
 				return Collections.emptyMap();
 			}
 
@@ -277,16 +275,16 @@ public interface Where {
 
 	class WhereImpl implements Where {
 		private final String str;
-		private final Map<String, Pair<String, Object>> values;
+		private final Map<String, ArgumentFactory> values;
 
-		public WhereImpl(String str, Map<String, Pair<String, Object>> values) {
+		public WhereImpl(String str, Map<String, ArgumentFactory> values) {
 			this.str = str;
 			this.values = values;
 		}
 
 		public static Where create(String name, Object value, String operator) {
 			var id = ID.generate().asString();
-			return new WhereImpl("\"" + name + "\" " + operator + " :" + id, Map.of(id, new Pair<>(name, value)));
+			return new WhereImpl("\"" + name + "\" " + operator + " :" + id, Map.of(id, ArgumentFactory.createDefault(name, value)));
 		}
 
 		public static Where create(String name, List<Object> values, String operator, Collector<CharSequence, ?, String> collector) {
@@ -294,7 +292,7 @@ public interface Where {
 					.map(v -> new Pair<>(ID.generate().asString(), v))
 					.toList();
 			return new WhereImpl("\"" + name + "\" " + operator + " " + ids.stream().map(p -> ":" + p.key()).collect(collector),
-					ids.stream().collect(Collectors.toMap(Pair::key, p -> new Pair<>(name, p.value())))
+					ids.stream().collect(Collectors.toMap(Pair::key, p -> ArgumentFactory.createDefault(name, p.value())))
 			);
 		}
 
@@ -310,7 +308,7 @@ public interface Where {
 
 		@NotNull
 		@Override
-		public Map<String, Pair<String, Object>> values() {
+		public Map<String, ArgumentFactory> values() {
 			return values;
 		}
 
