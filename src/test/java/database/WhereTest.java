@@ -28,6 +28,9 @@ public class WhereTest {
 		@Column
 		public String test;
 
+		@Column
+		public List<String> array;
+
 		@NotNull
 		@Override
 		public Table<TestClass> getTable() {
@@ -49,13 +52,13 @@ public class WhereTest {
 
 		table.deleteAll();
 
-		table.insert(new TestClass(null, "a"));
-		table.insert(new TestClass(null, "a"));
-		table.insert(new TestClass(null, "b"));
-		table.insert(new TestClass(null, "b"));
-		table.insert(new TestClass(null, "c"));
-		table.insert(new TestClass(null, "d"));
-		table.insert(new TestClass(null, "e"));
+		table.insert(new TestClass(null, "a", List.of("a")));
+		table.insert(new TestClass(null, "a", List.of("a", "b")));
+		table.insert(new TestClass(null, "b", List.of("a", "c")));
+		table.insert(new TestClass(null, "b", List.of("b", "c")));
+		table.insert(new TestClass(null, "c", List.of("b", "d")));
+		table.insert(new TestClass(null, "d", List.of("c")));
+		table.insert(new TestClass(null, "e", List.of("c", "d")));
 	}
 
 	@Test
@@ -72,5 +75,13 @@ public class WhereTest {
 		assertEquals(2, table.selectMany(Where.between("test", "a", "a")).size());
 		assertEquals(5, table.selectMany(Where.between("test", "a", "c")).size());
 		assertEquals(3, table.selectMany(Where.between("test", "c", "e")).size());
+	}
+
+	@Test
+	public void contains() {
+		assertEquals(3, table.selectMany(Where.contains("array", "a")).size());
+		assertEquals(3, table.selectMany(Where.contains("array", "b")).size());
+		assertEquals(4, table.selectMany(Where.contains("array", "c")).size());
+		assertEquals(2, table.selectMany(Where.contains("array", "d")).size());
 	}
 }
