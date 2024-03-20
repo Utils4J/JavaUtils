@@ -19,6 +19,16 @@ public interface Order {
 	}
 
 	@NotNull
+	default Order andAscendingBy(@NotNull String column) {
+		return () -> format() + ", \"" + column + "\" asc";
+	}
+
+	@NotNull
+	default Order andDescendingBy(@NotNull String column) {
+		return () -> format() + ", \"" + column + "\" desc";
+	}
+
+	@NotNull
 	default Order limit(int limit) {
 		return () -> format() + " limit " + limit;
 	}
