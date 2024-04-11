@@ -45,16 +45,12 @@ You can generate such an id by using:
 
 ```java
 var id = ID.generate();
-System.out.
-
-println(id.asString());
+System.out.println(id.asString());
 ```
 
 To extract the timestamp out of an exsiting id you can use
 
 ```java
 var id = ID.decode("...");
-System.out.
-
-println(id.getTimeCreated());
+System.out.println(id.getTimeCreated());
 ```
