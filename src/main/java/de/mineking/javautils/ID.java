@@ -5,31 +5,34 @@ import org.jetbrains.annotations.NotNull;
 
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Arrays;
 
 public class ID {
-	private final static Base62 base62 = Base62.createInstance();
-	public final static int size = Long.BYTES + Byte.BYTES; //Timestamp + Serial
+	public final static Base62 BASE62 = Base62.createInstance();
+	public final static Charset CHARSET = StandardCharsets.UTF_8;
+
+	public final static int SIZE = Long.BYTES + Byte.BYTES; //Timestamp + Serial
 
 	private static long lastTime = 0;
 	private static byte serial;
 
 	@NotNull
 	private static String toString(@NotNull byte[] bytes) {
-		return new String(base62.encode(bytes), StandardCharsets.UTF_8);
+		return new String(BASE62.encode(bytes), CHARSET);
 	}
 
 	@NotNull
 	private static byte[] fromString(@NotNull String str) {
-		return base62.decode(str.getBytes(StandardCharsets.UTF_8));
+		return BASE62.decode(str.getBytes(CHARSET));
 	}
 
 	@NotNull
 	public synchronized static ID generate() {
 		var time = System.currentTimeMillis();
-		var buffer = ByteBuffer.allocate(size);
+		var buffer = ByteBuffer.allocate(SIZE);
 
 		if(time > lastTime) serial = Byte.MIN_VALUE;
 		else if(serial == Byte.MAX_VALUE) {
@@ -63,12 +66,16 @@ public class ID {
 	private final byte[] data;
 
 	ID(byte[] data) {
-		this.data = data;
+		if(data.length >= SIZE) this.data = data;
+		else {
+			this.data = new byte[SIZE];
+			System.arraycopy(data, 0, this.data, SIZE - data.length, data.length);
+		}
 	}
 
 	@NotNull
 	public String asString() {
-		return toString(data);
+		return toString().substring(2); //Remove 2 leading zeros
 	}
 
 	@NotNull
@@ -92,6 +99,6 @@ public class ID {
 
 	@Override
 	public String toString() {
-		return asString();
+		return toString(data);
 	}
 }
