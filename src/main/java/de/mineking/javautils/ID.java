@@ -75,7 +75,7 @@ public class ID {
 
 	@NotNull
 	public String asString() {
-		return toString().substring(2); //Remove 2 leading zeros
+		return toString(data).substring(2); //Remove 2 leading zeros
 	}
 
 	@NotNull
@@ -98,7 +98,12 @@ public class ID {
 	}
 
 	@Override
+	public int hashCode() {
+		return Arrays.hashCode(data);
+	}
+
+	@Override
 	public String toString() {
-		return toString(data);
+		return asString();
 	}
 }
