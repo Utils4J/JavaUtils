@@ -98,6 +98,11 @@ public class ID {
 	}
 
 	@Override
+	public int hashCode() {
+		return Arrays.hashCode(data);
+	}
+
+	@Override
 	public String toString() {
 		return asString();
 	}
