@@ -54,8 +54,8 @@ public class ID {
 	}
 
 	@NotNull
-	public static ID decode(@NotNull BigInteger id) {
-		return new ID(id.toByteArray());
+	public static ID decode(long id) {
+		return new ID(BigInteger.valueOf(id).toByteArray());
 	}
 
 	@NotNull
@@ -79,8 +79,8 @@ public class ID {
 	}
 
 	@NotNull
-	public BigInteger asNumber() {
-		return new BigInteger(data);
+	public long asNumber() {
+		return new BigInteger(data).longValue();
 	}
 
 	@NotNull
